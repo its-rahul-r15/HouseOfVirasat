@@ -1,0 +1,314 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gold-primary: #B89768;
+  --color-gold-hover: #A07F52;
+  --color-gold-light: #F8F5EE;
+  --color-gold-tint: rgba(184, 151, 104, 0.12);
+  --color-silver-accent: #8E959D;
+  --color-silver-light: #F2F4F7;
+  --color-heritage-maroon: #5A1E24;
+  --color-heritage-maroon-dark: #3E1317;
+
+  --color-bg-primary: #FFFFFF;
+  --color-bg-warm: #F9F8F5;
+  --color-bg-surface: #F3F2EE;
+  --color-bg-surface-hover: #EAE8E1;
+
+  --color-text-main: #1A1A1A;
+  --color-text-muted: #6B7280;
+  --color-text-subtle: #9CA3AF;
+  --color-border-hairline: #E5E2DA;
+  --color-border-medium: #D1CCC0;
+
+  --font-serif: 'Cormorant Garamond', Garamond, Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ==========================================================================
+   RESET & BASELINE
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-text-main);
+  background-color: var(--color-bg-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: #E8DECF;
+  color: var(--color-text-main);
+}
+
+img, video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ==========================================================================
+   TYPOGRAPHY
+   ========================================================================== */
+h1, h2, h3, h4, .editorial-heading {
+  font-family: var(--font-serif);
+  color: var(--color-text-main);
+  font-weight: 500;
+  line-height: 1.18;
+}
+
+.brand-wordmark {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   BUTTONS (Restrained Luxury Aesthetics)
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.75rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  transition: all 180ms ease;
+  border-radius: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.btn:active {
+  transform: scale(0.99);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-gold-primary);
+  outline-offset: 2px;
+}
+
+.btn-primary-burgundy {
+  background-color: var(--color-heritage-maroon);
+  color: #FFFFFF;
+  border: 1px solid var(--color-heritage-maroon);
+}
+
+.btn-primary-burgundy:hover {
+  background-color: var(--color-heritage-maroon-dark);
+  border-color: var(--color-heritage-maroon-dark);
+}
+
+.btn-primary-burgundy:focus-visible {
+  outline: 2px solid var(--color-heritage-maroon);
+  outline-offset: 2px;
+}
+
+.btn-primary-gold {
+  background-color: var(--color-gold-primary);
+  color: #FFFFFF;
+  border: 1px solid var(--color-gold-primary);
+}
+
+.btn-primary-gold:hover {
+  background-color: var(--color-gold-hover);
+  border-color: var(--color-gold-hover);
+}
+
+.btn-primary-gold:focus-visible {
+  outline: 2px solid var(--color-gold-primary);
+  outline-offset: 2px;
+}
+
+.btn-dark {
+  background-color: var(--color-text-main);
+  color: #FFFFFF;
+  border: 1px solid var(--color-text-main);
+}
+
+.btn-dark:hover {
+  background-color: #333333;
+  border-color: #333333;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--color-text-main);
+  border: 1px solid var(--color-border-medium);
+}
+
+.btn-outline:hover {
+  border-color: var(--color-text-main);
+  background-color: var(--color-bg-surface);
+}
+
+.btn-whatsapp {
+  background-color: #25D366;
+  color: #FFFFFF;
+  border: 1px solid #25D366;
+}
+
+.btn-whatsapp:hover {
+  background-color: #1EBE5D;
+}
+
+.btn-sm {
+  padding: 0.55rem 1.1rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+}
+
+.btn-xs {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+}
+
+/* ==========================================================================
+   INPUTS & FORMS
+   ========================================================================== */
+.input-luxury {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-border-hairline);
+  border-radius: 2px;
+  font-size: 0.92rem;
+  color: var(--color-text-main);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.input-luxury:focus {
+  border-color: var(--color-gold-primary);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--color-gold-primary);
+}
+
+.input-luxury::placeholder {
+  color: var(--color-text-subtle);
+  font-size: 0.88rem;
+}
+
+.select-luxury {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.1em;
+  padding-right: 2.5rem;
+}
+
+/* ==========================================================================
+   BADGES
+   ========================================================================== */
+.badge-luxury {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 600;
+  border-radius: 2px;
+}
+
+/* ==========================================================================
+   SKELETON SHIMMER
+   ========================================================================== */
+.skeleton {
+  background: linear-gradient(90deg, #F3F2EE 25%, #EBE9E2 50%, #F3F2EE 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite ease-in-out;
+  border-radius: 2px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   MOBILE & SCROLLBAR UTILITIES
+   ========================================================================== */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   ACCESSIBILITY & REDUCED MOTION
+   ========================================================================== */
+.skip-link {
+  position: absolute;
+  top: -9999px;
+  left: 1rem;
+  background-color: var(--color-heritage-maroon);
+  color: #FFFFFF;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 2px;
+  z-index: 10000;
+  text-decoration: underline;
+  transition: top 150ms ease;
+}
+
+.skip-link:focus-visible {
+  top: 1rem;
+  outline: 2px solid var(--color-gold-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
