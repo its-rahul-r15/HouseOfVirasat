@@ -5,6 +5,7 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
 
 import { env } from './config/env.js';
 import { ApiError } from './lib/ApiError.js';
@@ -54,10 +55,39 @@ const uploadsPath = path.resolve(env.UPLOADS_DIR);
 app.use('/uploads', express.static(uploadsPath));
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Health check endpoint
-app.get('/api/v1/health', (req, res) => {
-  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+// Comprehensive Health Check Endpoints (for Coolify, Docker, and Load Balancers)
+const getHealthStatus = () => {
+  const dbStates = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting',
+  };
+  const dbState = mongoose.connection.readyState;
+  const isHealthy = dbState === 1;
+
+  return {
+    status: isHealthy ? 'ok' : 'degraded',
+    service: 'House of Virasat API',
+    environment: env.NODE_ENV,
+    timestamp: new Date().toISOString(),
+    uptime: `${Math.floor(process.uptime())}s`,
+    database: {
+      status: dbStates[dbState] || 'unknown',
+      connected: isHealthy,
+    },
+    memory: {
+      rss: `${Math.round(process.memoryUsage().rss / 1024 / 1024)}MB`,
+      heapUsed: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`,
+    },
+  };
+};
+
+app.get(['/', '/health', '/api/health', '/api/v1/health'], (req, res) => {
+  const health = getHealthStatus();
+  res.status(200).json(health);
 });
+
 
 // API Routes
 app.use('/api/v1/auth', authRoutes);
