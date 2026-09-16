@@ -28,15 +28,62 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Configure dynamic CORS origin handler to support credentials with wildcard or custom origins
+const getAllowedOrigins = () => {
+  if (!env.CORS_ORIGIN || env.CORS_ORIGIN === '*' || env.CORS_ORIGIN === 'true') {
+    return '*';
+  }
+  return env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean);
+};
+
+const allowedOrigins = getAllowedOrigins();
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow non-browser requests (e.g. mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
+
+    // If wildcard is enabled, reflect the request origin to satisfy browser credentials requirements
+    if (allowedOrigins === '*' || allowedOrigins.includes('*')) {
+      return callback(null, true);
+    }
+
+    // Direct match
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // Subdomain / hostname match
+    try {
+      const originHost = new URL(origin).hostname;
+      const isMatched = allowedOrigins.some((allowed) => {
+        try {
+          const allowedHost = allowed.startsWith('http') ? new URL(allowed).hostname : allowed;
+          return originHost === allowedHost || originHost.endsWith(`.${allowedHost}`);
+        } catch {
+          return allowed === origin;
+        }
+      });
+      if (isMatched) return callback(null, true);
+    } catch {
+      // In case of invalid URL
+    }
+
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 86400,
+};
+
 // Security & performance middlewares
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 
-app.use(cors({
-  origin: env.CORS_ORIGIN || true,
-  credentials: true,
-}));
+app.use(cors(corsOptions));
 
 app.use(compression());
 app.use(cookieParser());
