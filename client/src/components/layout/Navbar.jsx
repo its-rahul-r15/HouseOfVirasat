@@ -8,13 +8,13 @@ import {
   Menu,
   ChevronDown,
   Coins,
-  MessageCircle,
   X,
   Gem,
   Sparkles,
   BookOpen,
   Phone,
 } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useSettings } from '../../context/SettingsContext';
@@ -347,7 +347,7 @@ export default function Navbar({ onOpenMobileNav }) {
             style={{ background: '#25D366' }}
             aria-label="Open WhatsApp concierge"
           >
-            <MessageCircle className="w-3.5 h-3.5" aria-hidden="true" />
+            <FaWhatsapp className="w-4 h-4" aria-hidden="true" style={{fontSize:'16px'}} />
             <span>WhatsApp</span>
           </a>
 

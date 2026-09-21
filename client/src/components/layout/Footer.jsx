@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Truck, Sparkles, MessageCircle, Heart } from 'lucide-react';
+import { ShieldCheck, Truck, Sparkles, Heart } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
 import { useSettings } from '../../context/SettingsContext';
 import { getWhatsAppLink } from '../../utils/whatsapp';
 
@@ -38,7 +39,7 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-col items-center md:items-start text-center md:text-left gap-2">
-            <MessageCircle className="w-6 h-6 text-[#B89768] stroke-[1.5]" />
+            <FaWhatsapp style={{fontSize:'24px', color:'#B89768'}} />
             <h4 className="font-serif text-lg text-white">Direct Karigar Concierge</h4>
             <p className="text-xs text-[#9CA3AF] leading-relaxed">
               Speak directly with our jewellery consultants on WhatsApp for bespoke orders.
@@ -71,7 +72,7 @@ export default function Footer() {
                 className="inline-flex items-center gap-2 text-xs tracking-wider uppercase font-semibold text-[#B89768] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B89768] transition-colors"
                 aria-label="Inquire on WhatsApp Concierge"
               >
-                <MessageCircle className="w-4 h-4" aria-hidden="true" />
+                <FaWhatsapp style={{fontSize:'16px'}} aria-hidden="true" />
                 Inquire on WhatsApp Concierge
               </a>
             </div>

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import MobileNav from './components/layout/MobileNav';
-import BottomNav from './components/layout/BottomNav';
 import Footer from './components/layout/Footer';
 import CartDrawer from './components/cart/CartDrawer';
 import FloatingWhatsApp from './components/common/FloatingWhatsApp';
@@ -45,10 +44,7 @@ export default function App() {
         <AppRoutes />
       </main>
 
-      {/* 7. Persistent Mobile Bottom Dock Navigation */}
-      <BottomNav onOpenCategories={() => setMobileNavOpen(true)} />
-
-      {/* 8. Luxury Heritage Footer */}
+      {/* 7. Luxury Heritage Footer */}
       <Footer />
     </div>
   );

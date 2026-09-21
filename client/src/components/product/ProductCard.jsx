@@ -48,28 +48,28 @@ export default function ProductCard({ product }) {
   const renderPrice = () => {
     if (product.priceMode === 'ON_REQUEST' || product.priceMode === 'ESTIMATED') {
       return (
-        <span className="text-xs tracking-wide font-medium text-[#B8935A]">
-          Price upon request
+        <span className="text-[10.5px] sm:text-xs tracking-wide font-medium text-[#B8935A]">
+          Price on request
         </span>
       );
     }
     if (product.priceMode === 'STARTING_FROM') {
       return (
-        <div className="flex items-baseline gap-1.5 tabular-nums">
-          <span className="text-xs text-[#6B7280]">From</span>
-          <span className="text-sm font-semibold text-[#2B2320]">
+        <div className="flex items-baseline gap-1 sm:gap-1.5 tabular-nums">
+          <span className="text-[9.5px] sm:text-xs text-[#6B7280]">From</span>
+          <span className="text-[12.5px] sm:text-sm font-semibold text-[#2B2320]">
             {formatINR(product.sellingPrice || product.mrp)}
           </span>
         </div>
       );
     }
     return (
-      <div className="flex items-baseline gap-2 tabular-nums">
-        <span className="text-sm font-semibold text-[#2B2320]">
+      <div className="flex items-baseline gap-1.5 sm:gap-2 tabular-nums">
+        <span className="text-[12.5px] sm:text-sm font-semibold text-[#2B2320]">
           {formatINR(product.sellingPrice || product.mrp)}
         </span>
         {product.compareAtPrice && product.compareAtPrice > (product.sellingPrice || 0) && (
-          <span className="text-xs text-[#9CA3AF] line-through">
+          <span className="text-[9.5px] sm:text-xs text-[#9CA3AF] line-through">
             {formatINR(product.compareAtPrice)}
           </span>
         )}
@@ -125,7 +125,7 @@ export default function ProductCard({ product }) {
         />
 
         {/* Status Badge — top-left, per spec §4 */}
-        <div className="absolute top-3 left-3 z-10">
+        <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10">
           {isSoldOut ? (
             <StatusPill status="SOLD_OUT" />
           ) : isMTO ? (
@@ -141,11 +141,11 @@ export default function ProductCard({ product }) {
         <button
           type="button"
           onClick={handleWishlistClick}
-          className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-xs rounded-full text-[#2B2320] hover:text-[#5C1A2E] transition-colors shadow-xs z-10 min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5C1A2E]"
+          className="absolute top-2 right-2 sm:top-3 sm:right-3 p-1.5 sm:p-2 bg-white/90 backdrop-blur-xs rounded-full text-[#2B2320] hover:text-[#5C1A2E] transition-colors shadow-xs z-10 min-w-[32px] min-h-[32px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5C1A2E]"
           aria-label={isWishlisted ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
         >
           <Heart
-            className={`w-4 h-4 stroke-[1.5] ${
+            className={`w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[1.5] ${
               isWishlisted ? 'fill-[#5C1A2E] text-[#5C1A2E]' : ''
             }`}
             aria-hidden="true"
@@ -177,23 +177,23 @@ export default function ProductCard({ product }) {
       </Link>
 
       {/* Product Details */}
-      <div className="p-4 flex flex-col flex-1 justify-between gap-2">
+      <div className="p-2.5 sm:p-4 flex flex-col flex-1 justify-between gap-1 sm:gap-2">
         <div>
-          <span className="text-[10.5px] uppercase tracking-[0.14em] text-[#6B7280] font-medium block">
+          <span className="text-[9px] sm:text-[10.5px] uppercase tracking-[0.12em] text-[#6B7280] font-medium block">
             {formatPurity(product.metalType, product.purity)}
           </span>
           <Link
             to={productPath}
-            className="font-serif text-[17px] font-medium text-[#2B2320] hover:text-[#B8935A] transition-colors line-clamp-1 mt-0.5"
+            className="font-serif text-[13px] sm:text-[17px] font-medium text-[#2B2320] hover:text-[#B8935A] transition-colors line-clamp-1 mt-0.5 leading-snug block"
           >
             {product.name}
           </Link>
         </div>
 
-        <div className="pt-2 border-t border-[#F3F2EE] flex items-center justify-between">
+        <div className="pt-1.5 sm:pt-2 border-t border-[#F3F2EE] flex items-center justify-between">
           {renderPrice()}
           {product.netWeight && (
-            <span className="text-[11px] text-[#9CA3AF] tabular-nums">{product.netWeight}g net</span>
+            <span className="text-[9.5px] sm:text-[11px] text-[#9CA3AF] tabular-nums">{product.netWeight}g</span>
           )}
         </div>
       </div>

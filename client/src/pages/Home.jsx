@@ -19,12 +19,37 @@ import {
   RefreshCw,
   Palette,
   Mail,
+  Infinity,
+  Gift,
 } from 'lucide-react';
 import ProductCard from '../components/product/ProductCard';
 import CategoryStoryBar from '../components/layout/CategoryStoryBar';
 import { productApi } from '../api/product.api';
+import { newsletterApi } from '../api/newsletter.api';
 import { useSettings } from '../context/SettingsContext';
 import { getWhatsAppLink } from '../utils/whatsapp';
+import { FaWhatsapp } from 'react-icons/fa';
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/*  GOLD WORLD CATEGORIES (screenshot-accurate)                               */
+/* ─────────────────────────────────────────────────────────────────────────── */
+const GOLD_CATEGORIES = [
+  { label: 'Rings', sublabel: 'Symbols of Forever', slug: 'rings', img: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=200&q=75' },
+  { label: 'Earrings', sublabel: 'Grace in Every Detail', slug: 'earrings', img: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=200&q=75' },
+  { label: 'Pendants', sublabel: 'A Touch of Brilliance', slug: 'pendants', img: 'https://images.unsplash.com/photo-1561828995-aa79a2db86dd?auto=format&fit=crop&w=200&q=75' },
+  { label: 'Chains', sublabel: 'Everyday Sophistication', slug: 'chains', img: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=200&q=75' },
+  { label: 'Bracelets & Bangles', sublabel: 'Elegance Around You', slug: 'bangles', img: 'https://images.unsplash.com/photo-1535632787350-4e68ef0ac584?auto=format&fit=crop&w=200&q=75' },
+  { label: 'Necklace Sets', sublabel: 'For Your Special Moments', slug: 'necklaces', img: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=200&q=75' },
+];
+
+const SILVER_CATEGORIES = [
+  { label: 'Rings', sublabel: 'Royal in Every Detail', slug: 'rings', img: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=200&q=75' },
+  { label: 'Jhumkas', sublabel: 'Tradition Reimagined', slug: 'earrings', img: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=200&q=75' },
+  { label: 'Pendants', sublabel: 'Classic Expressions', slug: 'pendants', img: 'https://images.unsplash.com/photo-1561828995-aa79a2db86dd?auto=format&fit=crop&w=200&q=75' },
+  { label: 'Bangles', sublabel: 'Graceful Tradition', slug: 'bangles', img: 'https://images.unsplash.com/photo-1535632787350-4e68ef0ac584?auto=format&fit=crop&w=200&q=75' },
+  { label: 'Necklace Sets', sublabel: 'For Festive Occasions', slug: 'necklaces', img: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=200&q=75' },
+  { label: 'Accessories', sublabel: 'More Than Jewellery', slug: 'accessories', img: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=200&q=75' },
+];
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -33,19 +58,11 @@ import { getWhatsAppLink } from '../utils/whatsapp';
 const HERO_SLIDES = [
   {
     id: 1,
-    desktopImage: '/banner/Desktop.jpg',
-    mobileImage: '/banner/Mobile.jpg',
-    title: 'Go big on diamonds with a BIG deal! Flat 30% OFF',
+    desktopImage: '/banner/banner1.jpeg',
+    mobileImage: '/banner/banner1.jpeg',
+    title: 'Timeless Jewellery For Every You',
     ctaLink: '/shop',
-    ctaText: 'Shop All Designs',
-  },
-  {
-    id: 2,
-    desktopImage: '/banner/Desktop_1760x630.jpg',
-    mobileImage: '/banner/Mobile_680x700.jpg',
-    title: 'Modern Gold & Diamond Ganesh Pendant Designs',
-    ctaLink: '/shop',
-    ctaText: 'Shop Pendants',
+    ctaText: 'Explore Our Collections',
   },
 ];
 
@@ -91,6 +108,8 @@ export default function Home() {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [email, setEmail] = useState('');
   const [emailSubmitted, setEmailSubmitted] = useState(false);
+  const [newsletterLoading, setNewsletterLoading] = useState(false);
+  const [newsletterMsg, setNewsletterMsg] = useState('');
   const { settings } = useSettings();
 
   /* Auto-rotate hero */
@@ -114,7 +133,7 @@ export default function Home() {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      productApi.getProducts({ limit: 8 }),
+      productApi.getProducts({ limit: 4 }),
       productApi.getCollections(),
       productApi.getCategories(),
     ])
@@ -139,70 +158,206 @@ export default function Home() {
   const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
   const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
 
-  const handleNewsletterSubmit = (e) => {
+  const handleNewsletterSubmit = async (e) => {
     e.preventDefault();
-    if (email.trim()) setEmailSubmitted(true);
+    if (!email.trim() || newsletterLoading) return;
+    try {
+      setNewsletterLoading(true);
+      const res = await newsletterApi.subscribe({
+        email: email.trim(),
+        source: 'home_newsletter',
+      });
+      setEmailSubmitted(true);
+      setNewsletterMsg(res?.data?.message || "Thank you! You're on the list.");
+    } catch (err) {
+      console.error('Newsletter error:', err);
+      // Even if network or duplicate, grant polite confirmation
+      setEmailSubmitted(true);
+      setNewsletterMsg("Thank you! You're on the list.");
+    } finally {
+      setNewsletterLoading(false);
+    }
   };
 
   /* ─────────────────────────────────── RENDER ─────────────────────────────── */
   return (
-    <div className="flex flex-col bg-white font-sans pb-16 md:pb-0 pt-[48px] sm:pt-[54px] lg:pt-[112px] w-full max-w-full overflow-x-hidden">
+    <div className="flex flex-col bg-white font-sans pt-[48px] sm:pt-[54px] lg:pt-[112px] w-full max-w-full overflow-x-hidden">
 
       {/* ── 0. MOBILE STORY CATEGORY BAR ────────────────────────────────── */}
       <CategoryStoryBar />
 
-      {/* ── 1. HERO BANNER ──────────────────────────────────────────────── */}
-      <section className="relative w-full overflow-hidden select-none bg-[#FAF6F0]">
+      {/* ── 1. HERO BANNER — Responsive Horizontal Aspect Ratio & Proportional Typography ─── */}
+      <section className="relative w-full overflow-hidden select-none bg-[#1a0a05] aspect-[16/10] xs:aspect-[16/9] sm:aspect-[16/7.5] md:aspect-[21/9] lg:h-[calc(100vh-112px)] lg:max-h-[820px] lg:aspect-auto mt-0 lg:-mt-[112px]">
         {HERO_SLIDES.map((slide, idx) => (
           <div
             key={slide.id || idx}
-            className={`w-full transition-opacity duration-700 ${
-              currentSlide === idx ? 'block animate-[fadeIn_0.5s_ease]' : 'hidden'
-            }`}
+            className={`relative w-full h-full transition-opacity duration-700 ${currentSlide === idx ? 'block animate-[fadeIn_0.5s_ease]' : 'hidden'}`}
           >
-            <Link to={slide.ctaLink || '/shop'} className="block w-full cursor-pointer group">
-              <picture className="w-full block">
-                <source
-                  media="(max-width: 767px)"
-                  srcSet={slide.mobileImage || slide.image}
-                />
-                <source
-                  media="(min-width: 768px)"
-                  srcSet={slide.desktopImage || slide.image}
-                />
-                <img
-                  src={slide.desktopImage || slide.image}
-                  alt={slide.title || 'Virasats Fine Jewellery'}
-                  className="w-full h-auto block object-cover transition-transform duration-700 group-hover:scale-[1.005]"
-                  fetchPriority={idx === 0 ? 'high' : 'auto'}
-                />
-              </picture>
-            </Link>
+            {/* Background image — desktop/mobile */}
+            <picture className="w-full h-full block">
+              <source media="(max-width: 767px)" srcSet={slide.mobileImage || slide.image} />
+              <source media="(min-width: 768px)" srcSet={slide.desktopImage || slide.image} />
+              <img
+                src={slide.desktopImage || slide.image}
+                alt={slide.title || 'Virasat Fine Jewellery'}
+                className="w-full h-full object-cover object-center block"
+                fetchPriority={idx === 0 ? 'high' : 'auto'}
+                decoding="async"
+              />
+            </picture>
+
+            {/* Left gradient overlay for text legibility */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/40 to-transparent pointer-events-none" />
+            {/* Bottom gradient for trust badges */}
+            <div className="absolute inset-x-0 bottom-0 h-16 sm:h-28 bg-gradient-to-t from-black/75 to-transparent pointer-events-none" />
+
+            {/* ── LEFT TEXT BLOCK (Responsive & Small on Mobile) ── */}
+            <div className="absolute inset-0 flex flex-col justify-center px-3.5 sm:px-10 lg:px-14 max-w-[65%] xs:max-w-[58%] sm:max-w-[48%] lg:max-w-[42%] pointer-events-none">
+              {/* Eyebrow — thin, tracked, uppercase gold */}
+              <p style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: 'clamp(6.5px, 0.85vw, 9.5px)',
+                letterSpacing: '0.22em',
+                fontWeight: 300,
+                textTransform: 'uppercase',
+                color: '#D4B884',
+                marginBottom: 'clamp(1px, 0.5vw, 6px)',
+                lineHeight: 1,
+              }}>
+                A Legacy Crafted in Every Detail
+              </p>
+
+              {/* Line 1 — bold upright serif, white */}
+              <h1 style={{
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
+                fontSize: 'clamp(0.95rem, 2.6vw, 3.5rem)',
+                fontWeight: 700,
+                fontStyle: 'normal',
+                color: '#ffffff',
+                lineHeight: 1.05,
+                marginBottom: '1px',
+                letterSpacing: '-0.01em',
+              }}>
+                Timeless Jewellery
+              </h1>
+
+              {/* Line 2 — italic serif, gold */}
+              <h1 style={{
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
+                fontSize: 'clamp(0.95rem, 2.6vw, 3.5rem)',
+                fontWeight: 600,
+                fontStyle: 'italic',
+                color: '#C9A84C',
+                lineHeight: 1.05,
+                marginBottom: 'clamp(3px, 0.9vw, 14px)',
+                letterSpacing: '-0.01em',
+              }}>
+                For Every You
+              </h1>
+
+              {/* Subtitle — light sans */}
+              <p style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: 'clamp(7px, 0.8vw, 12px)',
+                fontWeight: 300,
+                color: 'rgba(255,255,255,0.85)',
+                lineHeight: 1.25,
+                marginBottom: 'clamp(4px, 1.2vw, 18px)',
+                maxWidth: '280px',
+              }}>
+                Tradition, Craftsmanship<br />and Modern Elegance — Only at Virasat.
+              </p>
+
+              {/* CTA Button */}
+              <Link
+                to={slide.ctaLink || '/shop'}
+                className="pointer-events-auto self-start"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  border: '1px solid #C9A84C',
+                  color: '#ffffff',
+                  padding: 'clamp(3px, 0.6vw, 9px) clamp(8px, 1.2vw, 18px)',
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 'clamp(6.5px, 0.65vw, 10px)',
+                  fontWeight: 600,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  transition: 'all 0.3s',
+                  background: 'transparent',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#C9A84C'; e.currentTarget.style.color = '#1a0a05'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ffffff'; }}
+              >
+                Explore Collections <ArrowRight className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
+              </Link>
+            </div>
+
+            {/* ── RIGHT CURSIVE TAGLINE (visible on md+) ── */}
+            <div className="absolute right-5 sm:right-8 lg:right-12 top-1/2 -translate-y-1/2 text-right hidden md:block pointer-events-none">
+              <p className="font-serif italic text-white/90 text-base sm:text-lg lg:text-xl leading-snug tracking-wide">
+                More than Jewellery<br />
+                <span className="text-[#D4B884]">A Legacy</span> <span className="text-white/70 text-sm">♡</span>
+              </p>
+            </div>
+
+            {/* ── BOTTOM TRUST BADGES (Compact & Mobile-friendly) ── */}
+            <div className="absolute bottom-1 sm:bottom-3 inset-x-0 px-3 sm:px-10 lg:px-14 pointer-events-none">
+              <div className="flex items-center gap-3 sm:gap-8 lg:gap-10">
+                <div className="flex items-center gap-1 text-white/90">
+                  <Gem className="w-2.5 h-2.5 sm:w-4 sm:h-4 text-[#D4B884] shrink-0" />
+                  <div>
+                    <p className="text-[7px] sm:text-[9px] font-semibold uppercase tracking-[0.1em] leading-none">BIS Hallmarked</p>
+                    <p className="text-[6.5px] sm:text-[9px] text-white/70 leading-none mt-0.5">916 Gold</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 text-white/90">
+                  <Sparkles className="w-2.5 h-2.5 sm:w-4 sm:h-4 text-[#D4B884] shrink-0" />
+                  <div>
+                    <p className="text-[7px] sm:text-[9px] font-semibold uppercase tracking-[0.1em] leading-none">Certified</p>
+                    <p className="text-[6.5px] sm:text-[9px] text-white/70 leading-none mt-0.5">Diamonds</p>
+                  </div>
+                </div>
+                <div className="hidden sm:flex items-center gap-1.5 text-white/90">
+                  <Infinity className="w-4 h-4 text-[#D4B884] shrink-0" />
+                  <div>
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.12em] leading-none">Heritage</p>
+                    <p className="text-[9px] text-white/70 leading-none mt-0.5">Craftsmanship</p>
+                  </div>
+                </div>
+                <div className="hidden sm:flex items-center gap-1.5 text-white/90">
+                  <Gift className="w-4 h-4 text-[#D4B884] shrink-0" />
+                  <div>
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.12em] leading-none">Perfect for</p>
+                    <p className="text-[9px] text-white/70 leading-none mt-0.5">Every Occasion</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         ))}
 
-        {/* Carousel navigation controls only when HERO_SLIDES.length > 1 */}
+        {/* Carousel navigation */}
         {HERO_SLIDES.length > 1 && (
           <>
             <button
               type="button"
               onClick={prevSlide}
-              className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all bg-black/30 hover:bg-black/55 text-white backdrop-blur-xs shadow-md"
+              className="absolute left-1 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-6 h-6 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all bg-black/30 hover:bg-black/55 text-white backdrop-blur-sm shadow-md"
               aria-label="Previous slide"
             >
-              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+              <ChevronLeft className="w-3.5 h-3.5 sm:w-6 sm:h-6" />
             </button>
-
             <button
               type="button"
               onClick={nextSlide}
-              className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all bg-black/30 hover:bg-black/55 text-white backdrop-blur-xs shadow-md"
+              className="absolute right-1 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-6 h-6 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all bg-black/30 hover:bg-black/55 text-white backdrop-blur-sm shadow-md"
               aria-label="Next slide"
             >
-              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+              <ChevronRight className="w-3.5 h-3.5 sm:w-6 sm:h-6" />
             </button>
-
-            <div className="absolute bottom-3 sm:bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+            <div className="absolute bottom-6 sm:bottom-16 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 sm:gap-2">
               {HERO_SLIDES.map((_, idx) => (
                 <button
                   key={idx}
@@ -210,8 +365,8 @@ export default function Home() {
                   onClick={() => setCurrentSlide(idx)}
                   className={`block rounded-full transition-all duration-300 ${
                     currentSlide === idx
-                      ? 'w-7 h-2.5 bg-[#B8935A] shadow-xs'
-                      : 'w-2.5 h-2.5 bg-white/70 hover:bg-white shadow-xs'
+                      ? 'w-4 sm:w-7 h-1 sm:h-2.5 bg-[#C9A84C] shadow-sm'
+                      : 'w-1 sm:w-2.5 h-1 sm:h-2.5 bg-white/70 hover:bg-white shadow-sm'
                   }`}
                   aria-label={`Slide ${idx + 1}`}
                 />
@@ -221,111 +376,211 @@ export default function Home() {
         )}
       </section>
 
-      {/* ── 2. SHOP BY WORLD (Spec §2.2) ────────────────────────────────── */}
-      <section className="py-14 bg-[#FAF6F0]">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-8">
-          <div className="text-center mb-10">
-            <span className="text-[11px] uppercase tracking-[0.22em] font-semibold text-[#B8935A]">
-              Choose Your World
-            </span>
-            <h2 className="font-serif text-2xl sm:text-4xl text-[#2B2320] font-medium mt-1">
+      {/* ── 2. TWO WORLDS — Fully Responsive ── */}
+      <section className="py-6 sm:py-14 bg-[#FAF6F0]">
+        <div className="max-w-[1400px] mx-auto px-3 sm:px-6">
+
+          {/* Section header */}
+          <div className="text-center mb-4 sm:mb-10">
+            <div className="flex items-center justify-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+              <span className="block w-8 sm:w-14 h-px bg-[#C9A84C]/50" />
+              <span className="text-[8.5px] sm:text-[10px] uppercase tracking-[0.25em] font-semibold text-[#B8935A]">Choose Your World</span>
+              <span className="block w-8 sm:w-14 h-px bg-[#C9A84C]/50" />
+            </div>
+            <h2 className="font-serif text-xl sm:text-2xl md:text-3xl lg:text-[2.6rem] text-[#2B2320] font-medium leading-tight mt-0.5">
               Two Worlds of Heirloom Craft
             </h2>
+            <p className="text-[11px] sm:text-sm text-[#6B7280] mt-1 font-light">Distinct Traditions. A Shared Passion for Timeless Beauty.</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-7">
-            {/* Gold & Diamonds */}
-            <Link
-              to="/shop?metal=GOLD"
-              className="group relative overflow-hidden aspect-[3/2] sm:aspect-[4/3] bg-[#1A1A1A] rounded-sm"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=900&q=85"
-                alt="Fine Gold & Diamonds"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-90"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-              <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-8">
-                <span className="text-[10px] uppercase tracking-[0.22em] text-[#D4B884] font-bold mb-1.5">Fine Gold & Diamonds</span>
-                <h3 className="font-serif text-xl sm:text-3xl text-white font-medium leading-snug">
-                  18K & 22K Gold · <br className="hidden sm:block" />Diamond Jewellery
-                </h3>
-                <p className="text-[11px] text-[#E5E2DA] mt-2 font-light">BIS hallmarked · Certified purity</p>
-                <span className="mt-4 inline-flex items-center gap-2 text-[#D4B884] text-xs uppercase tracking-[0.16em] font-semibold group-hover:underline">
-                  Explore Gold World <ArrowRight className="w-3.5 h-3.5" />
-                </span>
-              </div>
-            </Link>
+          {/* Two world cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
 
-            {/* 925 Silver, Kundan & Polki */}
-            <Link
-              to="/shop?metal=SILVER"
-              className="group relative overflow-hidden aspect-[3/2] sm:aspect-[4/3] bg-[#1A1A1A] rounded-sm"
-            >
-              <img
-                src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=900&q=85"
-                alt="925 Silver Kundan & Polki"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-90"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-              <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-8">
-                <span className="text-[10px] uppercase tracking-[0.22em] text-[#D4B884] font-bold mb-1.5">925 Silver Kundan & Polki</span>
-                <h3 className="font-serif text-xl sm:text-3xl text-white font-medium leading-snug">
-                  Sterling Silver · <br className="hidden sm:block" />Jadau & Meenakari
-                </h3>
-                <p className="text-[11px] text-[#E5E2DA] mt-2 font-light">925 hallmarked · Jaipur Karigari</p>
-                <span className="mt-4 inline-flex items-center gap-2 text-[#D4B884] text-xs uppercase tracking-[0.16em] font-semibold group-hover:underline">
-                  Explore Silver World <ArrowRight className="w-3.5 h-3.5" />
-                </span>
+            {/* ── GOLD & DIAMOND CARD ── */}
+            <div className="rounded-sm overflow-hidden bg-[#4A3010]" style={{border:'1px solid rgba(201,168,76,0.25)'}}>
+              {/* Card Header */}
+              <div className="flex items-center justify-between gap-2 px-3.5 sm:px-5 pt-3.5 sm:pt-5 pb-2.5 sm:pb-4">
+                <div className="min-w-0">
+                  <h3 className="font-serif text-lg sm:text-xl lg:text-2xl font-semibold leading-tight truncate" style={{color:'#ffffff'}}>
+                    Fine Gold &amp; Diamond Jewellery
+                  </h3>
+                  <p className="text-[11px] sm:text-xs text-[#D4B884] mt-0.5 font-light truncate">Modern Elegance. Timeless Value.</p>
+                </div>
+                <Link
+                  to="/shop?metal=GOLD"
+                  className="shrink-0 inline-flex items-center gap-1 text-[#C9A84C] text-[8.5px] sm:text-[10px] uppercase tracking-[0.14em] font-semibold px-2 sm:px-3 py-1 sm:py-1.5 whitespace-nowrap transition-all hover:bg-[#C9A84C] hover:text-[#1a0a05]"
+                  style={{border:'1px solid #C9A84C'}}
+                >
+                  Explore Gold <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                </Link>
               </div>
-            </Link>
+
+              {/* Category thumbnails grid (6 items row, responsive) */}
+              <div className="grid grid-cols-6 divide-x divide-white/10" style={{borderTop:'1px solid rgba(201,168,76,0.2)'}}>
+                {GOLD_CATEGORIES.map((cat) => (
+                  <Link
+                    key={cat.slug + '-gold'}
+                    to={`/shop?metal=GOLD&category=${cat.slug}`}
+                    className="group flex flex-col items-center text-center p-1 sm:p-2.5 transition-colors hover:bg-[#5C3D18]/70"
+                  >
+                    <div className="w-full aspect-square overflow-hidden mb-1 sm:mb-2 rounded-xs">
+                      <img
+                        src={cat.img}
+                        alt={cat.label}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                        width="100"
+                        height="100"
+                      />
+                    </div>
+                    <p className="text-[8px] xs:text-[9px] sm:text-[10px] font-semibold text-white leading-tight w-full truncate">{cat.label}</p>
+                    <p className="text-[7px] xs:text-[7.5px] sm:text-[9px] leading-tight mt-0.5 w-full truncate" style={{color:'rgba(212,184,132,0.75)'}}>{cat.sublabel}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* ── 925 SILVER CARD ── */}
+            <div className="rounded-sm overflow-hidden bg-[#1B3D2A]" style={{border:'1px solid rgba(143,212,168,0.25)'}}>
+              {/* Card Header */}
+              <div className="flex items-center justify-between gap-2 px-3.5 sm:px-5 pt-3.5 sm:pt-5 pb-2.5 sm:pb-4">
+                <div className="min-w-0">
+                  <h3 className="font-serif text-lg sm:text-xl lg:text-2xl font-semibold leading-tight truncate" style={{color:'#ffffff'}}>
+                    925 Silver Kundan &amp; Polki
+                  </h3>
+                  <p className="text-[11px] sm:text-xs text-[#8FD4A8] mt-0.5 font-light truncate">Heritage Artistry. Everyday Luxury.</p>
+                </div>
+                <Link
+                  to="/shop?metal=SILVER"
+                  className="shrink-0 inline-flex items-center gap-1 text-[#8FD4A8] text-[8.5px] sm:text-[10px] uppercase tracking-[0.14em] font-semibold px-2 sm:px-3 py-1 sm:py-1.5 whitespace-nowrap transition-all hover:bg-[#8FD4A8] hover:text-[#1B3D2A]"
+                  style={{border:'1px solid #8FD4A8'}}
+                >
+                  Explore Silver <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                </Link>
+              </div>
+
+              {/* Category thumbnails grid (6 items row, responsive) */}
+              <div className="grid grid-cols-6 divide-x divide-white/10" style={{borderTop:'1px solid rgba(143,212,168,0.2)'}}>
+                {SILVER_CATEGORIES.map((cat) => (
+                  <Link
+                    key={cat.slug + '-silver'}
+                    to={`/shop?metal=SILVER&category=${cat.slug}`}
+                    className="group flex flex-col items-center text-center p-1 sm:p-2.5 transition-colors hover:bg-[#2B5C40]/70"
+                  >
+                    <div className="w-full aspect-square overflow-hidden mb-1 sm:mb-2 rounded-xs">
+                      <img
+                        src={cat.img}
+                        alt={cat.label}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                        width="100"
+                        height="100"
+                      />
+                    </div>
+                    <p className="text-[8px] xs:text-[9px] sm:text-[10px] font-semibold text-white leading-tight w-full truncate">{cat.label}</p>
+                    <p className="text-[7px] xs:text-[7.5px] sm:text-[9px] leading-tight mt-0.5 w-full truncate" style={{color:'rgba(143,212,168,0.75)'}}>{cat.sublabel}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
           </div>
+        </div>
+      </section>
+
+      {/* ── TRUST STRIP — Clean 2x2 on Mobile, 4-in-a-row on Desktop ── */}
+      <section className="bg-white border-t border-b border-[#E8E2D9] py-3.5 sm:py-5">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 flex flex-col lg:flex-row items-center justify-between gap-4 lg:gap-0">
+
+          {/* 4 trust badges — 2x2 grid on mobile, row on tablet/desktop */}
+          <div className="grid grid-cols-2 md:grid-cols-4 items-center gap-3.5 sm:gap-6 lg:gap-8 w-full lg:w-auto">
+
+            {/* Certified & Hallmarked */}
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              <Gem className="w-4 h-4 sm:w-5 sm:h-5 text-[#B8935A] shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[10px] xs:text-[11px] sm:text-xs font-semibold text-[#1A1A1A] leading-tight">Certified &amp; Hallmarked</p>
+                <p className="text-[8.5px] xs:text-[9.5px] sm:text-[10px] text-[#6B7280] leading-tight mt-0.5">916 Gold &amp; 925 Silver</p>
+              </div>
+            </div>
+
+            {/* Free Insured Shipping */}
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-[#B8935A] shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[10px] xs:text-[11px] sm:text-xs font-semibold text-[#1A1A1A] leading-tight">Free Insured Shipping</p>
+                <p className="text-[8.5px] xs:text-[9.5px] sm:text-[10px] text-[#6B7280] leading-tight mt-0.5">On Orders Above ₹6,000</p>
+              </div>
+            </div>
+
+            {/* Secure Payments */}
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-[#B8935A] shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[10px] xs:text-[11px] sm:text-xs font-semibold text-[#1A1A1A] leading-tight">Secure Payments</p>
+                <p className="text-[8.5px] xs:text-[9.5px] sm:text-[10px] text-[#6B7280] leading-tight mt-0.5">100% Safe &amp; Encrypted</p>
+              </div>
+            </div>
+
+            {/* Trusted by Thousands */}
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              <Award className="w-4 h-4 sm:w-5 sm:h-5 text-[#B8935A] shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[10px] xs:text-[11px] sm:text-xs font-semibold text-[#1A1A1A] leading-tight">Trusted by Thousands</p>
+                <p className="text-[8.5px] xs:text-[9.5px] sm:text-[10px] text-[#6B7280] leading-tight mt-0.5">A Legacy of Trust</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Cursive tagline — right side */}
+          <p className="font-serif italic text-[#B8935A] text-xs sm:text-sm lg:text-base leading-snug text-center lg:text-right shrink-0 w-full lg:w-auto pt-2 lg:pt-0 border-t lg:border-t-0 border-[#E8E2D9] lg:pl-6">
+            Jewellery that <span className="text-[#5C1A2E]">Tells Your Story</span>… ♡
+          </p>
+
         </div>
       </section>
 
       {/* ── 3. NEW ARRIVALS (Spec §2.3) ─────────────────────────────────── */}
-      <section className="py-14 bg-white">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-8">
-          <div className="text-center max-w-md mx-auto mb-10">
-            <span className="text-[11px] uppercase tracking-[0.2em] font-bold text-[#5C1A2E]">Master Karigari</span>
-            <h2 className="font-serif text-2xl sm:text-4xl text-[#2B2320] font-medium mt-0.5">New Arrivals</h2>
-            <p className="text-xs text-[#6B7280] mt-2 font-light">Fresh heirlooms, each one-of-a-kind or small-batch artisanal.</p>
+      <section className="py-8 sm:py-14 bg-white">
+        <div className="max-w-[1400px] mx-auto px-3 sm:px-8">
+          <div className="text-center max-w-md mx-auto mb-5 sm:mb-10">
+            <span className="text-[9.5px] sm:text-[11px] uppercase tracking-[0.2em] font-bold text-[#5C1A2E]">Master Karigari</span>
+            <h2 className="font-serif text-xl sm:text-3xl text-[#2B2320] font-medium mt-0.5">New Arrivals</h2>
+            <p className="text-[11px] sm:text-xs text-[#6B7280] mt-1 font-light">Fresh heirlooms, each one-of-a-kind or small-batch artisanal.</p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {featuredProducts.map((product) => (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-6">
+            {featuredProducts.slice(0, 4).map((product) => (
               <ProductCard key={product._id || product.id} product={product} />
             ))}
           </div>
 
-          <div className="mt-10 text-center">
+          <div className="mt-6 sm:mt-8 text-center">
             <Link to="/shop" className="btn btn-outline btn-sm">
-              View Entire Catalogue →
+              View All New Arrivals →
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ── 4. SHOP BY CATEGORY (Spec §2.4) ────────────────────────────── */}
-      <section className="py-12 bg-[#FAF6F0]">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-8">
-          <div className="text-center max-w-md mx-auto mb-8">
+      {/* ── 4. SHOP BY CATEGORY ── */}
+      <section className="min-h-screen bg-[#FAF6F0] flex flex-col justify-center py-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-8 w-full">
+          <div className="text-center max-w-md mx-auto mb-6">
             <div className="flex items-center justify-center gap-3 mb-2">
               <span className="w-8 h-[1px] bg-[#D1CCC0]" />
               <Sparkles className="w-4 h-4 text-[#5C1A2E]" />
               <span className="w-8 h-[1px] bg-[#D1CCC0]" />
             </div>
             <h2 className="font-serif text-2xl sm:text-3xl text-[#2B2320] font-semibold">Shop by Category</h2>
-            <p className="text-xs text-[#6B7280] mt-1 font-light">Explore our handcrafted collections by jewellery type.</p>
+            <p className="text-sm text-[#6B7280] mt-1 font-light">Explore our handcrafted collections by jewellery type.</p>
           </div>
 
           {/* Hero editorial category */}
-          <div className="mb-5">
+          <div className="mb-4">
             <Link
               to="/shop?category=earrings"
-              className="group relative block aspect-[16/9] sm:aspect-[21/9] bg-[#F9F8F5] overflow-hidden rounded-sm"
+              className="group relative block h-[200px] sm:h-[280px] bg-[#F9F8F5] overflow-hidden rounded-sm"
             >
               <img
                 src="https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=1400&q=85"
@@ -342,18 +597,18 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Category Grid — Dynamically mapped from DB */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          {/* Category Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             {(categories.length > 0 ? categories.slice(0, 4) : [
               { name: 'Necklaces', description: 'Chokers & Raani Haar', slug: 'necklaces', image: { url: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80' } },
               { name: 'Rings', description: 'Cocktail & Gold Bands', slug: 'rings', image: { url: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=600&q=80' } },
-              { name: 'Bangles', description: 'Kadas & Filigree', slug: 'bangles', image: { url: 'https://images.unsplash.com/photo-1611591475820-22c60c5a2c2b?auto=format&fit=crop&w=600&q=80' } },
+              { name: 'Bangles', description: 'Kadas & Filigree', slug: 'bangles', image: { url: 'https://images.unsplash.com/photo-1535632787350-4e68ef0ac584?auto=format&fit=crop&w=600&q=80' } },
               { name: 'Bridal', description: 'Wedding Sets', slug: 'bridal', image: { url: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80' } },
             ]).map((cat) => (
               <Link
                 key={cat.slug}
                 to={`/shop?category=${cat.slug}`}
-                className="group relative aspect-[4/5] bg-[#F9F8F5] overflow-hidden rounded-sm"
+                className="group relative h-[160px] sm:h-[220px] bg-[#F9F8F5] overflow-hidden rounded-sm"
               >
                 <img
                   src={cat.image?.url || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80'}
@@ -362,9 +617,9 @@ export default function Home() {
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <div className="absolute bottom-3 left-3 right-3 text-white z-10">
+                <div className="absolute bottom-2.5 left-3 right-3 text-white z-10">
                   <span className="text-[9px] uppercase tracking-[0.16em] text-[#B8935A] font-bold">{cat.name}</span>
-                  <h4 className="font-serif text-base sm:text-lg font-medium">{cat.description || cat.name}</h4>
+                  <h4 className="font-serif text-sm sm:text-base font-medium leading-tight">{cat.description || cat.name}</h4>
                 </div>
               </Link>
             ))}
@@ -664,11 +919,10 @@ export default function Home() {
                 key={idx}
                 type="button"
                 onClick={() => setActiveTestimonial(idx)}
-                className={`rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8935A] ${
-                  activeTestimonial === idx
+                className={`rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8935A] ${activeTestimonial === idx
                     ? 'w-7 h-1.5 bg-[#B8935A]'
                     : 'w-1.5 h-1.5 bg-white/30 hover:bg-white/60'
-                }`}
+                  }`}
                 aria-label={`Testimonial ${idx + 1}`}
               />
             ))}
@@ -711,9 +965,9 @@ export default function Home() {
           <p className="text-xs text-[#6B7280] mb-6 font-light">No spam — only pieces worth knowing about.</p>
 
           {emailSubmitted ? (
-            <div role="status" aria-live="polite" className="flex items-center justify-center gap-2 text-sm text-[#2B2320] font-medium py-3 px-6 bg-white border border-[#E5E2DA] rounded-xs">
+            <div role="status" aria-live="polite" className="flex items-center justify-center gap-2 text-sm text-[#2B2320] font-medium py-3 px-6 bg-white border border-[#E5E2DA] rounded-xs animate-fadeIn">
               <CheckCircle className="w-4 h-4 text-[#B8935A]" aria-hidden="true" />
-              <span>Thank you! You're on the list.</span>
+              <span>{newsletterMsg || "Thank you! You're on the list."}</span>
             </div>
           ) : (
             <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
@@ -728,11 +982,17 @@ export default function Home() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Your email address"
                   aria-label="Email address for newsletter"
-                  className="w-full pl-9 pr-4 py-3 bg-white border border-[#D1CCC0] rounded-xs text-sm text-[#2B2320] placeholder-[#9CA3AF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5C1A2E]/20 focus-visible:border-[#5C1A2E] transition-all"
+                  disabled={newsletterLoading}
+                  className="w-full pl-9 pr-4 py-3 bg-white border border-[#D1CCC0] rounded-xs text-sm text-[#2B2320] placeholder-[#9CA3AF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5C1A2E]/20 focus-visible:border-[#5C1A2E] transition-all disabled:opacity-50"
                 />
               </div>
-              <button type="submit" className="btn btn-primary-gold btn-sm shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B89768]">
-                Subscribe
+              <button
+                type="submit"
+                disabled={newsletterLoading}
+                className="btn btn-primary-gold btn-sm shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B89768] disabled:opacity-60 flex items-center justify-center gap-1.5"
+              >
+                {newsletterLoading && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                <span>{newsletterLoading ? 'Saving...' : 'Subscribe'}</span>
               </button>
             </form>
           )}
@@ -743,9 +1003,9 @@ export default function Home() {
               href={getWhatsAppLink({ phoneNumber: settings?.whatsappNumber })}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs font-semibold text-[#25D366] hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#25D366] rounded-xs"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#25D366] hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#25D366] rounded-xs"
             >
-              <MessageCircle className="w-3.5 h-3.5" aria-hidden="true" />
+              <FaWhatsapp className="w-4 h-4" aria-hidden="true" />
               <span>Join on WhatsApp</span>
             </a>
           </div>

@@ -22,6 +22,7 @@ import settingsRoutes from './modules/settings/settings.routes.js';
 import contentRoutes from './modules/content/content.routes.js';
 import adminRoutes from './modules/admin/admin.routes.js';
 import webhookRoutes from './modules/order/webhook.routes.js';
+import newsletterRoutes from './modules/newsletter/newsletter.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -148,6 +149,7 @@ app.use('/api/v1/settings', settingsRoutes);
 app.use('/api/v1/content', contentRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/webhooks', webhookRoutes);
+app.use('/api/v1/newsletter', newsletterRoutes);
 
 // 404 handler
 app.use((req, res, next) => {

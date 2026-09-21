@@ -8,6 +8,7 @@ import {
   Sparkles,
   Ticket,
   Tags,
+  Mail,
   Settings,
   Users,
   ExternalLink,
@@ -43,6 +44,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
       items: [
         { to: '/admin/coupons', label: 'Discount Coupons', icon: Ticket },
         { to: '/admin/categories', label: 'Collections & Categories', icon: Tags },
+        { to: '/admin/newsletter', label: 'Newsletter Subscribers', icon: Mail },
       ],
     },
     {

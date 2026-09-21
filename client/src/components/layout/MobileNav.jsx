@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  X, Sparkles, MessageCircle, ShieldCheck, ArrowRight,
+  X, Sparkles, ShieldCheck, ArrowRight,
   ChevronDown, Truck, User,
 } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
 import { useSettings } from '../../context/SettingsContext';
 import { useAuth } from '../../context/AuthContext';
 import { getWhatsAppLink } from '../../utils/whatsapp';
@@ -223,7 +224,7 @@ export default function MobileNav({ isOpen, onClose }) {
             style={{ background: '#25D366' }}
             aria-label="WhatsApp Concierge"
           >
-            <MessageCircle className="w-4 h-4" aria-hidden="true" />
+            <FaWhatsapp style={{fontSize:'16px'}} aria-hidden="true" />
             WhatsApp Concierge
           </a>
         </div>

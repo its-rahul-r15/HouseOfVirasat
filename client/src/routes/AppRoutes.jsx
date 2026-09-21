@@ -34,6 +34,7 @@ import AdminCoupons from '../pages/Admin/AdminCoupons';
 import AdminCategories from '../pages/Admin/AdminCategories';
 import AdminSettings from '../pages/Admin/AdminSettings';
 import AdminUsers from '../pages/Admin/AdminUsers';
+import AdminNewsletter from '../pages/Admin/AdminNewsletter';
 import AdminLogin from '../pages/Admin/AdminLogin';
 
 // Common guards
@@ -93,6 +94,7 @@ export default function AppRoutes() {
         <Route path="bespoke" element={<AdminBespoke />} />
         <Route path="coupons" element={<AdminCoupons />} />
         <Route path="categories" element={<AdminCategories />} />
+        <Route path="newsletter" element={<AdminNewsletter />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="users" element={<AdminUsers />} />
       </Route>
