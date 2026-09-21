@@ -44,9 +44,10 @@ const corsOptions = {
     // Allow non-browser requests (e.g. mobile apps, curl, server-to-server)
     if (!origin) return callback(null, true);
 
-    // If wildcard is enabled, reflect the request origin to satisfy browser credentials requirements
+    // If wildcard is enabled, reflect the request origin back (not literal '*')
+    // because browsers block Access-Control-Allow-Origin: * with credentials: 'include'
     if (allowedOrigins === '*' || allowedOrigins.includes('*')) {
-      return callback(null, true);
+      return callback(null, origin);
     }
 
     // Direct match
