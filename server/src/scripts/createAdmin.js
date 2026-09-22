@@ -44,7 +44,7 @@ async function createAdmin() {
 
   try {
     console.log(`📡 Connecting to MongoDB...`);
-    await mongoose.connect(MONGODB_URI);
+    await mongoose.connect(MONGODB_URI, { dbName: 'house-of-virasat' });
     console.log('✅ Connected to MongoDB\n');
 
     // Check if admin already exists
