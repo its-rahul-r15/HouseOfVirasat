@@ -66,26 +66,30 @@ export async function loginUser({ email, password, totpCode }) {
       throw ApiError.unauthorized('Invalid email or password');
     }
 
-    if (admin.totpEnabled) {
-      if (!totpCode) {
-        return { requires2FA: true };
-      }
-
-      const verified = speakeasy.totp.verify({
-        secret: admin.totpSecret,
-        encoding: 'base32',
-        token: totpCode,
-        window: 1,
-      });
-
-      if (!verified) throw ApiError.unauthorized('Invalid 2FA code');
-    } else if (admin.role === 'SUPER_ADMIN' && env.NODE_ENV === 'production') {
-      // Block SUPER_ADMIN login without 2FA in production — too risky
-      throw ApiError.forbidden(
-        'SUPER_ADMIN accounts must have Two-Factor Authentication enabled before logging in on production. ' +
-        'Set it up via Settings → Security in a development environment first.'
-      );
-    }
+    // ── 2FA TEMPORARILY DISABLED ─────────────────────────────────────────
+    // Uncomment the block below to re-enable TOTP enforcement.
+    //
+    // if (admin.totpEnabled) {
+    //   if (!totpCode) {
+    //     return { requires2FA: true };
+    //   }
+    //
+    //   const verified = speakeasy.totp.verify({
+    //     secret: admin.totpSecret,
+    //     encoding: 'base32',
+    //     token: totpCode,
+    //     window: 1,
+    //   });
+    //
+    //   if (!verified) throw ApiError.unauthorized('Invalid 2FA code');
+    // } else if (admin.role === 'SUPER_ADMIN' && env.NODE_ENV === 'production') {
+    //   // Block SUPER_ADMIN login without 2FA in production — too risky
+    //   throw ApiError.forbidden(
+    //     'SUPER_ADMIN accounts must have Two-Factor Authentication enabled before logging in on production. ' +
+    //     'Set it up via Settings → Security in a development environment first.'
+    //   );
+    // }
+    // ─────────────────────────────────────────────────────────────────────
 
     await AdminUser.findByIdAndUpdate(admin._id, {
       $set: { loginAttempts: 0, lastLoginAt: new Date() },

@@ -2,8 +2,10 @@ import Category from './category.model.js';
 import Collection from './collection.model.js';
 import { ApiError } from '../../lib/ApiError.js';
 import { generateSitemap } from '../../services/sitemap.service.js';
+import { processUpload, deleteFile, UPLOAD_SUBDIRS } from '../../services/image.service.js';
 
-// Category Services
+// ─── Category Services ─────────────────────────────────────────────────────
+
 export async function listCategories(admin = false) {
   const filter = admin ? {} : { isActive: true };
   return Category.find(filter).populate('parent', 'name slug').sort({ displayOrder: 1, name: 1 });
@@ -46,7 +48,27 @@ export async function deleteCategory(id) {
   return { id };
 }
 
-// Collection Services
+/**
+ * Upload / replace a category's banner/thumbnail image.
+ * Old image is deleted from disk to avoid orphaned files on VPS storage.
+ */
+export async function uploadCategoryImage(id, file) {
+  const category = await Category.findById(id);
+  if (!category) throw ApiError.notFound('Category not found');
+
+  // Delete old image if one exists
+  if (category.image) {
+    deleteFile(category.image).catch(() => {});
+  }
+
+  const { url } = await processUpload(file.path, UPLOAD_SUBDIRS.CATEGORIES);
+  category.image = url;
+  await category.save();
+  return category;
+}
+
+// ─── Collection Services ───────────────────────────────────────────────────
+
 export async function listCollections(admin = false) {
   const filter = admin ? {} : { isActive: true };
   return Collection.find(filter).sort({ displayOrder: 1, name: 1 });
@@ -87,4 +109,21 @@ export async function deleteCollection(id) {
   }
   generateSitemap().catch(() => {});
   return { id };
+}
+
+/**
+ * Upload / replace a collection's banner image.
+ */
+export async function uploadCollectionImage(id, file) {
+  const collection = await Collection.findById(id);
+  if (!collection) throw ApiError.notFound('Collection not found');
+
+  if (collection.image) {
+    deleteFile(collection.image).catch(() => {});
+  }
+
+  const { url } = await processUpload(file.path, UPLOAD_SUBDIRS.COLLECTIONS);
+  collection.image = url;
+  await collection.save();
+  return collection;
 }

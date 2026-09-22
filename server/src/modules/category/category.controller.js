@@ -28,6 +28,13 @@ export const deleteCategory = catchAsync(async (req, res) => {
   ApiResponse.ok(res, null, 'Category deleted');
 });
 
+/** Upload / replace a category's image — POST /api/v1/categories/:id/image */
+export const uploadCategoryImageHandler = catchAsync(async (req, res) => {
+  if (!req.file) throw new Error('No image file provided');
+  const category = await categoryService.uploadCategoryImage(req.params.id, req.file);
+  ApiResponse.ok(res, category, 'Category image uploaded');
+});
+
 // Collections
 export const listCollections = catchAsync(async (req, res) => {
   const collections = await categoryService.listCollections(req.query.admin === 'true');
@@ -52,4 +59,11 @@ export const updateCollection = catchAsync(async (req, res) => {
 export const deleteCollection = catchAsync(async (req, res) => {
   await categoryService.deleteCollection(req.params.id);
   ApiResponse.ok(res, null, 'Collection deleted');
+});
+
+/** Upload / replace a collection's image — POST /api/v1/collections/:id/image */
+export const uploadCollectionImageHandler = catchAsync(async (req, res) => {
+  if (!req.file) throw new Error('No image file provided');
+  const collection = await categoryService.uploadCollectionImage(req.params.id, req.file);
+  ApiResponse.ok(res, collection, 'Collection image uploaded');
 });
