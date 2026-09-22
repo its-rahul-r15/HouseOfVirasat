@@ -51,18 +51,30 @@ export async function registerCustomer({ name, email, phone, password, anniversa
 
 export async function loginUser({ email, password, totpCode }) {
   const normalizedEmail = email.toLowerCase().trim();
+  console.log(`[LOGIN] Attempt for: ${normalizedEmail}`);
 
   // 1. Check if Admin
   const admin = await AdminUser.findOne({ email: normalizedEmail }).select('+password +totpSecret +refreshTokenHash');
 
-  if (admin && admin.isActive) {
+  if (admin) {
+    console.log(`[LOGIN] Admin found — isActive: ${admin.isActive}, role: ${admin.role}, totpEnabled: ${admin.totpEnabled}, loginAttempts: ${admin.loginAttempts}, isLocked: ${admin.isLocked}`);
+
+    if (!admin.isActive) {
+      console.log('[LOGIN] ❌ Admin is inactive');
+      throw ApiError.unauthorized('Account is inactive');
+    }
+
     if (admin.isLocked) {
+      console.log('[LOGIN] ❌ Admin account is locked');
       throw ApiError.unauthorized('Admin account locked due to excessive failed attempts. Try again later.');
     }
 
     const isMatch = await admin.comparePassword(password);
+    console.log(`[LOGIN] Password match: ${isMatch}`);
+
     if (!isMatch) {
       await admin.incrementLoginAttempts();
+      console.log('[LOGIN] ❌ Password mismatch — incrementing attempts');
       throw ApiError.unauthorized('Invalid email or password');
     }
 
@@ -91,6 +103,8 @@ export async function loginUser({ email, password, totpCode }) {
     // }
     // ─────────────────────────────────────────────────────────────────────
 
+    console.log('[LOGIN] ✅ Admin login successful');
+
     await AdminUser.findByIdAndUpdate(admin._id, {
       $set: { loginAttempts: 0, lastLoginAt: new Date() },
       $unset: { lockUntil: 1 },
@@ -112,6 +126,8 @@ export async function loginUser({ email, password, totpCode }) {
 
     return { accessToken, refreshToken, user: sanitizedAdmin };
   }
+
+  console.log(`[LOGIN] No admin found for: ${normalizedEmail} — checking customers`);
 
   // 2. Check if Customer Patron
   const customer = await User.findOne({ email: normalizedEmail }).select('+password');
@@ -141,6 +157,7 @@ export async function loginUser({ email, password, totpCode }) {
     };
   }
 
+  console.log(`[LOGIN] ❌ No matching active user found for: ${normalizedEmail}`);
   throw ApiError.unauthorized('Invalid email or password');
 }
 
