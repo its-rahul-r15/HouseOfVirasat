@@ -40,33 +40,8 @@ export default function AdminCoupons() {
         setCoupons([]);
       }
     } catch (err) {
-      console.warn('Fallback coupon list:', err);
-      setCoupons([
-        {
-          _id: 'c1',
-          code: 'VIRASAT10',
-          type: 'PERCENT',
-          value: 10,
-          minOrderValue: 15000,
-          maxDiscount: 5000,
-          usageLimit: 100,
-          usageCount: 24,
-          validUntil: '2026-12-31T23:59:59.000Z',
-          isActive: true,
-        },
-        {
-          _id: 'c2',
-          code: 'BRIDALVIP',
-          type: 'FIXED',
-          value: 5000,
-          minOrderValue: 50000,
-          maxDiscount: 5000,
-          usageLimit: 50,
-          usageCount: 12,
-          validUntil: '2026-11-30T23:59:59.000Z',
-          isActive: true,
-        },
-      ]);
+      console.error('Error fetching coupons:', err);
+      setCoupons([]);
     } finally {
       setLoading(false);
     }

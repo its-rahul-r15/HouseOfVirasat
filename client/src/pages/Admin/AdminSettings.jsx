@@ -8,6 +8,7 @@ import {
   Truck,
   CreditCard,
   MessageCircle,
+  Megaphone,
 } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
 
@@ -19,7 +20,8 @@ export default function AdminSettings() {
     goldRate24k: settings?.goldRate24k || 7350,
     goldRate18k: settings?.goldRate18k || 5550,
     silverRate925: settings?.silverRate925 || 89,
-    whatsappNumber: settings?.whatsappNumber || '+919876543210',
+    whatsappNumber: settings?.whatsappNumber || '+9188292882905',
+    announcementText: settings?.announcementText || 'Free insured shipping on all orders above ₹5,000 · BIS Hallmarked 925 Silver & 18K Gold',
     freeShippingThreshold: settings?.freeShippingThreshold || 5000,
     gstRate: settings?.gstRate || 3,
     invoicePrefix: settings?.invoicePrefix || 'HOV-INV',
@@ -35,6 +37,7 @@ export default function AdminSettings() {
       setFormData(prev => ({
         ...prev,
         ...settings,
+        announcementText: settings.announcementText !== undefined ? settings.announcementText : prev.announcementText,
         guestCheckoutEnabled: settings.guestCheckoutEnabled !== undefined ? settings.guestCheckoutEnabled : prev.guestCheckoutEnabled,
         codMaxOrderValue: settings.codMaxOrderValue || prev.codMaxOrderValue,
       }));
@@ -138,7 +141,44 @@ export default function AdminSettings() {
           </div>
         </div>
 
-        {/* ── 2. WhatsApp Concierge & Support ── */}
+        {/* ── 2. Top Header Announcement Bar Strip ── */}
+        <div className="bg-white border border-[#E8E2D9] rounded-sm p-6 space-y-4 shadow-2xs">
+          <div className="flex items-center gap-2 pb-2 border-b border-[#E8E2D9]">
+            <Megaphone className="w-4 h-4 text-[#5C1A2E]" aria-hidden="true" />
+            <h3 className="font-serif text-base font-semibold text-[#2B2320]">
+              Top Header Announcement Bar (Website Strip)
+            </h3>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <label htmlFor="settings-announcement" className="block font-semibold text-[#2B2320] mb-1">
+                Announcement Text (Displays at Top of Website) *
+              </label>
+              <input
+                type="text"
+                id="settings-announcement"
+                value={formData.announcementText}
+                onChange={(e) => setFormData({ ...formData, announcementText: e.target.value })}
+                placeholder="Free insured shipping on all orders above ₹5,000 · BIS Hallmarked 925 Silver & 18K Gold"
+                className="w-full px-3 py-2 text-sm border border-[#D1CCC4] rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5C1A2E]/20 focus-visible:border-[#5C1A2E]"
+              />
+              <span className="text-[10.5px] text-[#6B7280] mt-1 block">
+                This announcement strip appears at the very top of all pages across the website (e.g. promotional offers, hallmarking authenticity, seasonal discounts).
+              </span>
+            </div>
+
+            {/* Live Preview */}
+            <div className="pt-2">
+              <span className="text-[10px] uppercase tracking-wider font-semibold text-[#6B7280] block mb-1">Live Strip Preview:</span>
+              <div className="bg-[#5C1A2E] text-white text-[10.5px] tracking-[0.18em] uppercase font-medium py-1.5 px-4 rounded-xs text-center shadow-2xs">
+                <span>{formData.announcementText || 'Free insured shipping on all orders above ₹5,000 · BIS Hallmarked 925 Silver & 18K Gold'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── 3. WhatsApp Concierge & Support ── */}
         <div className="bg-white border border-[#E8E2D9] rounded-sm p-6 space-y-4 shadow-2xs">
           <div className="flex items-center gap-2 pb-2 border-b border-[#E8E2D9]">
             <MessageCircle className="w-4 h-4 text-[#25D366]" />
@@ -160,7 +200,7 @@ export default function AdminSettings() {
                 inputMode="tel"
                 value={formData.whatsappNumber}
                 onChange={(e) => setFormData({ ...formData, whatsappNumber: e.target.value })}
-                placeholder="+919876543210"
+                placeholder="+9188292882905"
                 className="w-full px-3 py-2 font-mono border border-[#D1CCC4] rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5C1A2E]/20 focus-visible:border-[#5C1A2E]"
               />
               <span className="text-[10.5px] text-[#6B7280] mt-1 block">

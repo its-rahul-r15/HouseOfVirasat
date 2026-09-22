@@ -1,5 +1,6 @@
 import Order from '../order/order.model.js';
 import Product from '../product/product.model.js';
+import Category from '../category/category.model.js';
 import MtoRequest from '../mto/mto.model.js';
 import BespokeEnquiry from '../bespoke/bespoke.model.js';
 import AdminUser from '../auth/adminUser.model.js';
@@ -14,11 +15,16 @@ export async function getDashboardStats() {
   const [
     todayOrders,
     monthOrders,
-    allPaidOrders,
+    allOrdersSummary,
     pendingFulfillments,
     activeMto,
     activeBespoke,
     lowStockProducts,
+    totalProductsCount,
+    totalCategoriesCount,
+    recentOrders,
+    recentMto,
+    recentBespoke,
   ] = await Promise.all([
     // Today's paid orders
     Order.find({
@@ -38,40 +44,62 @@ export async function getDashboardStats() {
     // Pending fulfillment count
     Order.countDocuments({
       paymentStatus: PAYMENT_STATUS.PAID,
-      fulfilmentStatus: { $in: [FULFILMENT_STATUS.UNFULFILLED, FULFILMENT_STATUS.PROCESSING] },
+      fulfilmentStatus: { $in: [FULFILMENT_STATUS.UNFULFILLED, FULFILMENT_STATUS.PROCESSING, FULFILMENT_STATUS.CONFIRMED, FULFILMENT_STATUS.IN_PRODUCTION] },
     }),
     // Active MTO
     MtoRequest.countDocuments({
-      status: { $nin: [MTO_STATUS.COMPLETED, MTO_STATUS.CANCELLED] },
+      status: { $nin: [MTO_STATUS.COMPLETED, MTO_STATUS.CANCELLED, 'DELIVERED'] },
     }),
     // Active Bespoke
     BespokeEnquiry.countDocuments({
-      status: { $nin: [BESPOKE_STATUS.CLOSED_WON, BESPOKE_STATUS.CLOSED_LOST] },
+      status: { $nin: [BESPOKE_STATUS.CLOSED_WON, BESPOKE_STATUS.CLOSED_LOST, 'CLOSED'] },
     }),
     // Low stock products
     Product.find({
-      $or: [
-        { isSinglePiece: false, trackStock: true, stockQty: { $lte: 3, $gt: 0 } },
-        { isSinglePiece: false, trackStock: true, stockQty: 0 },
-      ],
-      isActive: true,
-    }).select('title sku stockQty images').limit(10),
+      availabilityStatus: { $ne: 'ARCHIVED' },
+      stockQuantity: { $lte: 3 },
+    }).select('name sku stockQuantity heroImage sellingPrice availabilityStatus').limit(10),
+    // Total active products count
+    Product.countDocuments({ availabilityStatus: { $ne: 'ARCHIVED' } }),
+    // Total categories count
+    Category.countDocuments({ isActive: true }),
+    // Recent orders (last 6)
+    Order.find()
+      .sort({ createdAt: -1 })
+      .limit(6)
+      .select('referenceNumber customer total paymentStatus fulfilmentStatus createdAt items'),
+    // Recent MTO requests (last 5)
+    MtoRequest.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select('referenceNumber customer productName status quotedPrice depositAmount createdAt preferences'),
+    // Recent Bespoke inquiries (last 5)
+    BespokeEnquiry.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select('referenceNumber contact jewelleryType budgetRange status occasion createdAt'),
   ]);
 
   const todayRevenue = todayOrders.reduce((sum, o) => sum + (o.total || 0), 0);
   const monthRevenue = monthOrders.reduce((sum, o) => sum + (o.total || 0), 0);
-  const lifetimeRevenue = allPaidOrders[0]?.totalRevenue || 0;
-  const lifetimeOrders = allPaidOrders[0]?.totalOrders || 0;
+  const lifetimeRevenue = allOrdersSummary[0]?.totalRevenue || 0;
+  const lifetimeOrders = allOrdersSummary[0]?.totalOrders || 0;
+  const totalOrdersCount = await Order.countDocuments();
 
   return {
     kpis: {
       today: { revenue: todayRevenue, ordersCount: todayOrders.length },
       month: { revenue: monthRevenue, ordersCount: monthOrders.length },
-      lifetime: { revenue: lifetimeRevenue, ordersCount: lifetimeOrders },
+      lifetime: { revenue: lifetimeRevenue, ordersCount: lifetimeOrders, totalOrdersCount },
       pendingFulfillments,
       activeMto,
       activeBespoke,
+      totalProducts: totalProductsCount,
+      totalCategories: totalCategoriesCount,
     },
+    recentOrders,
+    recentMto,
+    recentBespoke,
     lowStockAlerts: lowStockProducts,
   };
 }

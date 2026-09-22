@@ -23,9 +23,15 @@ const imageFileFilter = (req, file, cb) => {
  * This keeps multer simple and stateless — it doesn't need to know the
  * target subdir; that's determined by the service layer.
  */
+import fs from 'fs';
+
 const tempStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(env.UPLOADS_DIR, 'temp'));
+    const dest = path.join(env.UPLOADS_DIR, 'temp');
+    if (!fs.existsSync(dest)) {
+      fs.mkdirSync(dest, { recursive: true });
+    }
+    cb(null, dest);
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();

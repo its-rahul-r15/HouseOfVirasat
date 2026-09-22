@@ -13,70 +13,71 @@ import {
   Coins,
   ShieldCheck,
   CheckCircle2,
+  RefreshCw,
+  FolderTree,
 } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
 import { useSettings } from '../../context/SettingsContext';
 
 export default function AdminDashboard() {
   const { settings } = useSettings();
-  const [stats, setStats] = useState({
-    revenue: 485900,
-    ordersCount: 14,
-    mtoCount: 3,
-    bespokeCount: 2,
-    lowStockCount: 1,
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState({
+    kpis: {
+      today: { revenue: 0, ordersCount: 0 },
+      month: { revenue: 0, ordersCount: 0 },
+      lifetime: { revenue: 0, ordersCount: 0, totalOrdersCount: 0 },
+      pendingFulfillments: 0,
+      activeMto: 0,
+      activeBespoke: 0,
+      totalProducts: 0,
+      totalCategories: 0,
+    },
+    recentOrders: [],
+    recentMto: [],
+    recentBespoke: [],
+    lowStockAlerts: [],
   });
 
-  const [recentOrders, setRecentOrders] = useState([
-    {
-      id: 'HOV-2024-8842',
-      customer: 'Gayatri Devi',
-      total: 34500,
-      paymentStatus: 'PAID',
-      fulfilmentStatus: 'IN_PRODUCTION',
-      date: 'Today, 2:15 PM',
-      itemsCount: 1,
-    },
-    {
-      id: 'HOV-2024-8841',
-      customer: 'Vikramaditya Rathore',
-      total: 78000,
-      paymentStatus: 'PAID',
-      fulfilmentStatus: 'CONFIRMED',
-      date: 'Yesterday',
-      itemsCount: 2,
-    },
-    {
-      id: 'HOV-2024-8840',
-      customer: 'Ananya Singhania',
-      total: 21500,
-      paymentStatus: 'PAID',
-      fulfilmentStatus: 'DELIVERED',
-      date: '04 Aug 2024',
-      itemsCount: 1,
-    },
-  ]);
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    try {
+      const res = await axiosClient.get('/admin/dashboard');
+      const payload = res?.data || res;
+      if (payload && payload.kpis) {
+        setData(payload);
+      }
+    } catch (err) {
+      console.error('Error loading dashboard stats:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
   const kpis = [
     {
       title: 'Total Revenue (MTH)',
-      value: `₹${stats.revenue.toLocaleString('en-IN')}`,
-      change: '+18.4% vs last month',
+      value: `₹${(data?.kpis?.month?.revenue || 0).toLocaleString('en-IN')}`,
+      change: `${data?.kpis?.month?.ordersCount || 0} orders this month`,
       icon: TrendingUp,
       color: '#5C1A2E',
       link: '/admin/orders',
     },
     {
-      title: 'Orders Placed',
-      value: stats.ordersCount,
-      change: '12 fulfilled · 2 processing',
+      title: 'Total Orders',
+      value: data?.kpis?.lifetime?.totalOrdersCount || data?.kpis?.lifetime?.ordersCount || 0,
+      change: `${data?.kpis?.pendingFulfillments || 0} pending fulfillment`,
       icon: Package,
       color: '#B8935A',
       link: '/admin/orders',
     },
     {
       title: 'Active MTO Karigari',
-      value: `${stats.mtoCount} Pieces`,
+      value: `${data?.kpis?.activeMto || 0} Pieces`,
       change: 'Johari Workshop Crafting',
       icon: Hammer,
       color: '#5C1A2E',
@@ -84,8 +85,8 @@ export default function AdminDashboard() {
     },
     {
       title: 'Bespoke Inquiries',
-      value: `${stats.bespokeCount} Leads`,
-      change: '1 requires video call',
+      value: `${data?.kpis?.activeBespoke || 0} Leads`,
+      change: 'Bridal & Custom Concierge',
       icon: Sparkles,
       color: '#B8935A',
       link: '/admin/bespoke',
@@ -106,19 +107,28 @@ export default function AdminDashboard() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={fetchDashboardData}
+            disabled={loading}
+            className="p-2 border border-[#D1CCC4] rounded-xs hover:bg-[#FAF6F0] text-[#2B2320] transition-colors"
+            title="Refresh Dashboard"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-[#5C1A2E]' : ''}`} />
+          </button>
+          <Link
+            to="/admin/categories"
+            className="btn btn-outline btn-sm flex items-center gap-1.5 text-xs bg-white"
+          >
+            <FolderTree className="w-3.5 h-3.5 text-[#5C1A2E]" />
+            <span>Categories</span>
+          </Link>
           <Link
             to="/admin/products/new"
             className="btn btn-primary-burgundy btn-sm flex items-center gap-1.5 text-xs"
           >
             <Plus className="w-4 h-4" />
             <span>Create Product</span>
-          </Link>
-          <Link
-            to="/admin/settings"
-            className="btn btn-outline btn-sm flex items-center gap-1.5 text-xs bg-white"
-          >
-            <Coins className="w-3.5 h-3.5 text-[#B8935A]" />
-            <span>Update Rates</span>
           </Link>
         </div>
       </div>
@@ -146,7 +156,7 @@ export default function AdminDashboard() {
 
               <div>
                 <span className="font-serif text-2xl font-semibold text-[#2B2320]">
-                  {kpi.value}
+                  {loading ? '—' : kpi.value}
                 </span>
                 <p className="text-[11px] text-[#5C1A2E] font-medium mt-1 flex items-center justify-between">
                   <span>{kpi.change}</span>
@@ -193,41 +203,73 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E8E2D9]">
-                {recentOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-[#FAF6F0]/60 transition-colors">
-                    <td className="p-3 font-mono font-bold text-[#5C1A2E]">
-                      {order.id}
-                      <span className="block text-[10px] text-[#9CA3AF] font-sans font-normal">
-                        {order.date}
-                      </span>
-                    </td>
-                    <td className="p-3 font-medium text-[#2B2320]">
-                      {order.customer}
-                    </td>
-                    <td className="p-3 font-semibold text-[#2B2320]">
-                      ₹{order.total.toLocaleString('en-IN')}
-                    </td>
-                    <td className="p-3">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-xs text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200">
-                        {order.paymentStatus}
-                      </span>
-                    </td>
-                    <td className="p-3">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-xs text-[10px] font-semibold text-[#5C1A2E] bg-[#5C1A2E]/10 border border-[#5C1A2E]/20">
-                        {order.fulfilmentStatus}
-                      </span>
-                    </td>
-                    <td className="p-3 text-right">
-                      <Link
-                        to={`/admin/orders?ref=${order.id}`}
-                        className="p-1.5 text-[#6B7280] hover:text-[#5C1A2E] inline-flex items-center gap-1"
-                        title="View details"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                      </Link>
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className="p-6 text-center text-[#6B7280]">
+                      <RefreshCw className="w-4 h-4 animate-spin text-[#5C1A2E] inline mr-2" />
+                      <span>Loading orders…</span>
                     </td>
                   </tr>
-                ))}
+                ) : !data.recentOrders || data.recentOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-8 text-center text-[#6B7280]">
+                      <Package className="w-6 h-6 text-[#9CA3AF] mx-auto mb-1.5" />
+                      <p className="font-medium text-[#2B2320]">No customer orders placed yet</p>
+                      <p className="text-[11px] text-[#9CA3AF]">New incoming store orders will appear here in real-time.</p>
+                    </td>
+                  </tr>
+                ) : (
+                  data.recentOrders.map((order) => {
+                    const formattedDate = order.createdAt
+                      ? new Date(order.createdAt).toLocaleDateString('en-IN', {
+                          day: '2-digit',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                      : '—';
+
+                    return (
+                      <tr key={order._id || order.referenceNumber} className="hover:bg-[#FAF6F0]/60 transition-colors">
+                        <td className="p-3 font-mono font-bold text-[#5C1A2E]">
+                          {order.referenceNumber || order._id}
+                          <span className="block text-[10px] text-[#9CA3AF] font-sans font-normal">
+                            {formattedDate}
+                          </span>
+                        </td>
+                        <td className="p-3 font-medium text-[#2B2320]">
+                          {order.customer?.name || 'Guest Patron'}
+                        </td>
+                        <td className="p-3 font-semibold text-[#2B2320]">
+                          ₹{(order.total || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td className="p-3">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-xs text-[10px] font-bold ${
+                            order.paymentStatus === 'PAID'
+                              ? 'text-emerald-700 bg-emerald-50 border border-emerald-200'
+                              : 'text-amber-700 bg-amber-50 border border-amber-200'
+                          }`}>
+                            {order.paymentStatus || 'PENDING'}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-xs text-[10px] font-semibold text-[#5C1A2E] bg-[#5C1A2E]/10 border border-[#5C1A2E]/20">
+                            {order.fulfilmentStatus || 'CONFIRMED'}
+                          </span>
+                        </td>
+                        <td className="p-3 text-right">
+                          <Link
+                            to={`/admin/orders?ref=${order.referenceNumber || order._id}`}
+                            className="p-1.5 text-[#6B7280] hover:text-[#5C1A2E] inline-flex items-center gap-1"
+                            title="View details"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
@@ -245,32 +287,32 @@ export default function AdminDashboard() {
                 </h4>
               </div>
               <span className="text-[10px] font-bold text-[#5C1A2E] bg-white px-2 py-0.5 rounded border border-[#E8E2D9]">
-                3 Active
+                {data?.kpis?.activeMto || 0} Active
               </span>
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="p-3 bg-white border border-[#E8E2D9] rounded-xs space-y-1">
-                <div className="flex justify-between items-center">
-                  <span className="font-mono font-bold text-[#5C1A2E] text-[11px]">HOV-MTO-041</span>
-                  <span className="text-[9.5px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">
-                    In Production
-                  </span>
+              {!data.recentMto || data.recentMto.length === 0 ? (
+                <div className="p-4 bg-white border border-[#E8E2D9] rounded-xs text-center text-[#6B7280]">
+                  <p className="font-medium text-[#2B2320]">No active MTO requests</p>
+                  <p className="text-[11px] text-[#9CA3AF] mt-0.5">Custom pieces commissioned by patrons will appear here.</p>
                 </div>
-                <p className="font-medium text-[#2B2320]">The Royal Mewar Polki Suite</p>
-                <p className="text-[11px] text-[#6B7280]">Target: 15 Aug 2024</p>
-              </div>
-
-              <div className="p-3 bg-white border border-[#E8E2D9] rounded-xs space-y-1">
-                <div className="flex justify-between items-center">
-                  <span className="font-mono font-bold text-[#5C1A2E] text-[11px]">HOV-MTO-040</span>
-                  <span className="text-[9.5px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">
-                    BIS Hallmarking
-                  </span>
-                </div>
-                <p className="font-medium text-[#2B2320]">Padmavati Chandbali Emeralds</p>
-                <p className="text-[11px] text-[#6B7280]">Target: 10 Aug 2024</p>
-              </div>
+              ) : (
+                data.recentMto.slice(0, 2).map((mto) => (
+                  <div key={mto._id || mto.referenceNumber} className="p-3 bg-white border border-[#E8E2D9] rounded-xs space-y-1">
+                    <div className="flex justify-between items-center">
+                      <span className="font-mono font-bold text-[#5C1A2E] text-[11px]">
+                        {mto.referenceNumber || mto._id}
+                      </span>
+                      <span className="text-[9.5px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">
+                        {mto.status || 'SUBMITTED'}
+                      </span>
+                    </div>
+                    <p className="font-medium text-[#2B2320] truncate">{mto.productName || 'Custom Commission'}</p>
+                    <p className="text-[11px] text-[#6B7280]">Patron: {mto.customer?.name || 'Patron'}</p>
+                  </div>
+                ))
+              )}
             </div>
 
             <Link
@@ -282,24 +324,28 @@ export default function AdminDashboard() {
             </Link>
           </div>
 
-          {/* Quick System Status */}
+          {/* Quick System & Catalogue Status */}
           <div className="bg-white border border-[#E8E2D9] rounded-sm p-5 space-y-3 text-xs">
             <h4 className="font-semibold text-[#2B2320] flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>Platform Health</span>
+              <span>Platform & Catalogue Health</span>
             </h4>
             <div className="space-y-2 text-[#6B7280] text-[11px]">
               <div className="flex justify-between">
-                <span>Database Status:</span>
+                <span>Active Products:</span>
+                <strong className="text-[#2B2320]">{data?.kpis?.totalProducts || 0} listed</strong>
+              </div>
+              <div className="flex justify-between">
+                <span>Catalogue Categories:</span>
+                <strong className="text-[#2B2320]">{data?.kpis?.totalCategories || 0} active</strong>
+              </div>
+              <div className="flex justify-between">
+                <span>Database Connection:</span>
                 <strong className="text-emerald-700">Connected (MongoDB)</strong>
               </div>
               <div className="flex justify-between">
-                <span>Gateway Mode:</span>
-                <strong className="text-[#2B2320]">Test (Razorpay)</strong>
-              </div>
-              <div className="flex justify-between">
-                <span>Shipping Aggregator:</span>
-                <strong className="text-[#2B2320]">Shiprocket API</strong>
+                <span>Gold Rate (24K / g):</span>
+                <strong className="text-[#B8935A]">₹{settings?.goldRate24k || 7350}</strong>
               </div>
             </div>
           </div>

@@ -146,15 +146,15 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Jaipur Atelier Address */}
+          {/* Atelier & Studio Address */}
           <div className="md:col-span-2 flex flex-col gap-3">
             <h5 className="text-[11px] tracking-[0.2em] uppercase font-semibold text-[#B89768]">
-              Jaipur Atelier
+              Atelier &amp; Studio
             </h5>
             <p className="text-xs text-[#9CA3AF] leading-relaxed">
-              House of Virasat Studio<br />
-              Johari Bazaar, Jaipur<br />
-              Rajasthan 302003, India
+              House of Virasat<br />
+              Pitambari Niwas, Lal Bazar<br />
+              Bettiah, Bihar — 845438
             </p>
             <p className="text-xs text-[#9CA3AF] pt-1">
               Mon – Sat: 11:00 AM – 7:30 PM IST

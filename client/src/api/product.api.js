@@ -7,4 +7,8 @@ export const productApi = {
   getCategoryBySlug: (slug) => axiosClient.get(`/categories/${slug}`),
   getCollections: () => axiosClient.get('/collections'),
   getCollectionBySlug: (slug) => axiosClient.get(`/collections/${slug}`),
+  uploadImages: (formData) =>
+    axiosClient.post('/products/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
 };

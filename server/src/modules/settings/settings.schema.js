@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const updateSettingsSchema = z.object({
   body: z.object({
     whatsappNumber: z.string().optional(),
+    announcementText: z.string().optional(),
     codEnabled: z.boolean().optional(),
     codMinOrderValue: z.number().min(0).optional(),
     codMaxOrderValue: z.number().min(0).optional(),

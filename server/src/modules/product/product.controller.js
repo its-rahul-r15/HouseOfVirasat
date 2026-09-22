@@ -42,6 +42,16 @@ export const uploadImages = catchAsync(async (req, res) => {
   ApiResponse.ok(res, product, 'Images uploaded');
 });
 
+export const uploadStandaloneImages = catchAsync(async (req, res) => {
+  const files = req.files || (req.file ? [req.file] : []);
+  if (!files || files.length === 0) {
+    return ApiResponse.badRequest(res, 'No files uploaded');
+  }
+  const processed = await productService.processStandaloneUploads(files);
+  const urls = processed.map((p) => p.url);
+  ApiResponse.ok(res, { urls, files: processed, url: urls[0] }, 'Images uploaded successfully');
+});
+
 export const removeImage = catchAsync(async (req, res) => {
   const product = await productService.removeProductImage(req.params.id, req.body.imageUrl);
   ApiResponse.ok(res, product, 'Image removed');

@@ -24,17 +24,26 @@ export default function ProductCard({ product }) {
   const productId = product._id || product.id;
   const isWishlisted = isInWishlist(productId);
 
-  const heroImage =
-    product.heroImage ||
-    product.images?.[0]?.url ||
-    product.images?.[0] ||
+  const getImageUrl = (img) => {
+    if (!img) return null;
+    if (typeof img === 'string') return img;
+    if (typeof img === 'object') return img.url || img.secure_url || null;
+    return null;
+  };
+
+  const defaultPlaceholder =
     'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80';
 
+  const heroImage =
+    getImageUrl(product.heroImage) ||
+    getImageUrl(product.gallery?.[0]) ||
+    getImageUrl(product.images?.[0]) ||
+    defaultPlaceholder;
+
   const hoverImage =
-    product.gallery?.[0]?.url ||
-    product.gallery?.[0] ||
-    product.images?.[1]?.url ||
-    product.images?.[1] ||
+    getImageUrl(product.gallery?.[1]) ||
+    getImageUrl(product.gallery?.[0]) ||
+    getImageUrl(product.images?.[1]) ||
     heroImage;
 
   const isMTO = product.availabilityStatus === 'MADE_TO_ORDER';
@@ -93,23 +102,30 @@ export default function ProductCard({ product }) {
 
   return (
     <div
-      className={`group relative flex flex-col bg-white transition-all duration-300 hover:shadow-sm ${
+      className={`group relative flex flex-col h-full bg-white transition-all duration-300 hover:shadow-sm ${
         isSoldOut ? 'opacity-70' : ''
       }`}
     >
-      {/* Image Container — 4:5 aspect */}
-      <Link to={productPath} className="relative block aspect-[4/5] bg-[#F9F8F5] overflow-hidden">
-
+      {/* Image Container — Strictly uniform 4:5 aspect ratio & fixed dimensions */}
+      <Link
+        to={productPath}
+        className="relative block w-full aspect-[4/5] bg-[#F9F8F5] overflow-hidden shrink-0 select-none"
+      >
         {/* Primary Image */}
         <img
           src={heroImage}
           alt={product.name || 'Handcrafted Jewellery'}
           width="320"
           height="400"
-          className={`w-full h-full object-cover object-center transition-opacity duration-500 group-hover:opacity-0 ${
+          className={`w-full h-full object-cover object-center transition-all duration-500 group-hover:scale-105 group-hover:opacity-0 ${
             isSoldOut ? 'grayscale' : ''
           }`}
           loading="lazy"
+          onError={(e) => {
+            if (e.target.src !== defaultPlaceholder) {
+              e.target.src = defaultPlaceholder;
+            }
+          }}
         />
 
         {/* Hover Image */}
@@ -118,10 +134,15 @@ export default function ProductCard({ product }) {
           alt={product.name ? `${product.name} alternate view` : 'Alternate view'}
           width="320"
           height="400"
-          className={`absolute inset-0 w-full h-full object-cover object-center opacity-0 transition-opacity duration-500 group-hover:opacity-100 ${
+          className={`absolute inset-0 w-full h-full object-cover object-center opacity-0 transition-all duration-500 group-hover:scale-105 group-hover:opacity-100 ${
             isSoldOut ? 'grayscale' : ''
           }`}
           loading="lazy"
+          onError={(e) => {
+            if (e.target.src !== defaultPlaceholder) {
+              e.target.src = defaultPlaceholder;
+            }
+          }}
         />
 
         {/* Status Badge — top-left, per spec §4 */}

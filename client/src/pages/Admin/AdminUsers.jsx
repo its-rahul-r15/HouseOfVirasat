@@ -56,30 +56,12 @@ export default function AdminUsers() {
       const data = res?.data || res;
       if (data) {
         setUsers(Array.isArray(data) ? data : (data.users || [data]));
+      } else {
+        setUsers([]);
       }
     } catch (err) {
-      console.warn('Fallback to local state:', err);
-      setUsers([
-        {
-          _id: 'adm_1',
-          name: 'Virasat Master Admin',
-          email: 'admin@houseofvirasat.com',
-          role: 'SUPER_ADMIN',
-          isActive: true,
-          permissions: {
-            manageProducts: true,
-            manageOrders: true,
-            manageMto: true,
-            manageBespoke: true,
-            manageCoupons: true,
-            manageSettings: true,
-            viewReports: true,
-            manageUsers: true,
-          },
-          lastLoginAt: new Date().toISOString(),
-          createdAt: '2026-01-10T10:00:00.000Z'
-        }
-      ]);
+      console.error('Error fetching admin users:', err);
+      setUsers([]);
     } finally {
       setLoading(false);
     }

@@ -6,11 +6,11 @@ const SettingsContext = createContext();
 export function SettingsProvider({ children }) {
   const [settings, setSettings] = useState({
     storeName: 'House of Virasat',
-    whatsappNumber: '919876543210',
+    whatsappNumber: '9188292882905',
     goldRate24k: 7300,
     goldRate18k: 5500,
     silverRate925: 88,
-    announcementText: '100% Certified 925 Silver & BIS Hallmarked Gold · Insured Pan-India Shipping',
+    announcementText: 'Free insured shipping on all orders above ₹5,000 · BIS Hallmarked 925 Silver & 18K Gold',
     freeShippingThreshold: 5000,
   });
   const [loading, setLoading] = useState(true);

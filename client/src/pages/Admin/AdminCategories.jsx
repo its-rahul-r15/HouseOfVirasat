@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Tags, Plus, Trash2, Edit2, Layers, Sparkles, X, Check, 
-  AlertCircle, RefreshCw, Eye, EyeOff, ArrowUpDown, Image as ImageIcon
+  AlertCircle, RefreshCw, Eye, EyeOff, ArrowUpDown, Image as ImageIcon,
+  Upload, Loader2
 } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
+import { productApi } from '../../api/product.api';
 
 export default function AdminCategories() {
   const [activeTab, setActiveTab] = useState('collections'); // 'collections' | 'categories'
@@ -15,6 +17,7 @@ export default function AdminCategories() {
   const [modalType, setModalType] = useState(null); // 'collection' | 'category' | null
   const [editingItem, setEditingItem] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [uploadingImg, setUploadingImg] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
@@ -104,6 +107,29 @@ export default function AdminCategories() {
       }));
     } else {
       setFormData(prev => ({ ...prev, name }));
+    }
+  };
+
+  const handleCatImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const data = new FormData();
+    data.append('images', file);
+
+    setUploadingImg(true);
+    setError(null);
+    try {
+      const res = await productApi.uploadImages(data);
+      const url = res?.data?.url || res?.data?.urls?.[0] || res?.url || res?.urls?.[0];
+      if (url) {
+        setFormData((prev) => ({ ...prev, imageUrl: url }));
+      }
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Failed to upload image');
+    } finally {
+      setUploadingImg(false);
+      e.target.value = '';
     }
   };
 
@@ -500,16 +526,61 @@ export default function AdminCategories() {
               </div>
 
               <div>
-                <label className="block text-[11px] uppercase tracking-wider text-[#6B7280] mb-1 font-semibold">
-                  {modalType === 'collection' ? 'Hero Banner Image URL' : 'Thumbnail Image URL'}
-                </label>
-                <input
-                  type="url"
-                  value={formData.imageUrl}
-                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  placeholder="https://..."
-                  className="w-full px-3 py-2 border border-[#E8E2D9] rounded-xs text-xs focus:outline-none focus:border-[#5C1A2E]"
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[11px] uppercase tracking-wider text-[#6B7280] font-semibold">
+                    {modalType === 'collection' ? 'Hero Banner Image' : 'Thumbnail Image'}
+                  </label>
+                  <label
+                    htmlFor="cat-file-upload"
+                    className="text-[11px] text-[#5C1A2E] hover:underline font-semibold cursor-pointer inline-flex items-center gap-1"
+                  >
+                    <Upload className="w-3 h-3" />
+                    <span>Upload Image File</span>
+                  </label>
+                  <input
+                    id="cat-file-upload"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/avif"
+                    onChange={handleCatImageUpload}
+                    className="hidden"
+                  />
+                </div>
+
+                {uploadingImg ? (
+                  <div className="py-3 bg-[#FAF6F0] rounded-xs border border-[#E8E2D9] flex items-center justify-center gap-2 text-[#5C1A2E] text-xs">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Uploading image...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    {formData.imageUrl && (
+                      <div className="w-10 h-10 rounded-xs overflow-hidden border border-[#E8E2D9] shrink-0 bg-[#FAF6F0]">
+                        <img
+                          src={formData.imageUrl}
+                          alt="Thumbnail preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <input
+                      type="text"
+                      value={formData.imageUrl}
+                      onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                      placeholder="https://... or click Upload Image above"
+                      className="w-full px-3 py-2 border border-[#E8E2D9] rounded-xs text-xs focus:outline-none focus:border-[#5C1A2E]"
+                    />
+                    {formData.imageUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, imageUrl: '' })}
+                        className="p-1.5 text-red-600 hover:bg-red-50 rounded-xs"
+                        title="Clear Image"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">

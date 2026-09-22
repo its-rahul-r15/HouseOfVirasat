@@ -7,6 +7,7 @@ export async function getPublicSettings() {
   const settings = await getSettings();
   return {
     whatsappNumber: settings.whatsappNumber,
+    announcementText: settings.announcementText || 'Free insured shipping on all orders above ₹5,000 · BIS Hallmarked 925 Silver & 18K Gold',
     codEnabled: settings.codEnabled,
     codMinOrderValue: settings.codMinOrderValue,
     codMaxOrderValue: settings.codMaxOrderValue,

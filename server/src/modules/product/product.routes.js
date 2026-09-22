@@ -16,6 +16,14 @@ router.get('/:handle', publicApiLimiter, productController.getProduct);
 // Admin routes
 router.use(authenticate);
 
+router.post(
+  '/upload',
+  requirePermission('manageProducts'),
+  uploadLimiter,
+  uploadProductImages.any(),
+  productController.uploadStandaloneImages,
+);
+
 router.get('/admin/:id', requirePermission('manageProducts'), productController.adminGetProduct);
 
 router.post(

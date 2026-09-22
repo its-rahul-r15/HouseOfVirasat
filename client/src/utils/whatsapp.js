@@ -2,7 +2,7 @@
  * Generates an authentic WhatsApp Concierge link for House of Virasat
  */
 export function getWhatsAppLink({
-  phoneNumber = '919876543210',
+  phoneNumber = '9188292882905',
   product = null,
   bespokeId = null,
   customMessage = null,
@@ -17,6 +17,9 @@ export function getWhatsAppLink({
     message = customMessage;
   }
 
-  const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
+  let cleanPhone = (phoneNumber || '9188292882905').toString().replace(/[^0-9]/g, '');
+  if (cleanPhone.length === 10) {
+    cleanPhone = '91' + cleanPhone;
+  }
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 }

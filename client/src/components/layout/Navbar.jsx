@@ -175,9 +175,9 @@ export default function Navbar({ onOpenMobileNav }) {
       {/* ── TOP BAR (announcement-style) ─────────────────────────────── */}
       <div
         style={{ background: BURGUNDY }}
-        className="hidden md:flex items-center justify-center py-1.5 px-4 text-[10.5px] tracking-[0.18em] uppercase font-medium text-white/90"
+        className="hidden md:flex items-center justify-center py-1.5 px-4 text-[10.5px] tracking-[0.18em] uppercase font-medium text-white/90 text-center"
       >
-        <span>Free insured shipping on all orders above ₹5,000 &nbsp;·&nbsp; BIS Hallmarked 925 Silver &amp; 18K Gold</span>
+        <span>{settings?.announcementText || 'Free insured shipping on all orders above ₹5,000 · BIS Hallmarked 925 Silver & 18K Gold'}</span>
       </div>
 
       {/* ── MAIN NAV ROW ─────────────────────────────────────────────── */}

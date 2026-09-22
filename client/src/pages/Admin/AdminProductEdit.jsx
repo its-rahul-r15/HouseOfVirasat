@@ -10,6 +10,11 @@ import {
   Gem,
   Image as ImageIcon,
   HelpCircle,
+  Upload,
+  Loader2,
+  CheckCircle2,
+  X,
+  Star,
 } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
 import { productApi } from '../../api/product.api';
@@ -24,6 +29,20 @@ export default function AdminProductEdit() {
   const [errorMsg, setErrorMsg] = useState('');
   const [categories, setCategories] = useState([]);
   const [collections, setCollections] = useState([]);
+
+  // Quick Category & Collection Modals
+  const [showQuickCatModal, setShowQuickCatModal] = useState(false);
+  const [quickCatName, setQuickCatName] = useState('');
+  const [quickCatDesc, setQuickCatDesc] = useState('');
+  const [creatingQuickCat, setCreatingQuickCat] = useState(false);
+
+  const [showQuickColModal, setShowQuickColModal] = useState(false);
+  const [quickColName, setQuickColName] = useState('');
+  const [quickColDesc, setQuickColDesc] = useState('');
+  const [creatingQuickCol, setCreatingQuickCol] = useState(false);
+
+  const [uploadingHero, setUploadingHero] = useState(false);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -82,14 +101,13 @@ export default function AdminProductEdit() {
     batchRef: '',
   });
 
-  // Load master categories & collections
-  useEffect(() => {
+  const loadCategoriesAndCollections = () => {
     productApi.getCategories()
       .then((res) => {
         const catList = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
         setCategories(catList);
         if (catList.length > 0) {
-          setFormData((prev) => ({ ...prev, category: prev.category || catList[0]._id }));
+          setFormData((prev) => ({ ...prev, category: prev.category || catList[0]._id || catList[0].slug }));
         }
       })
       .catch((err) => console.warn('Could not load categories:', err));
@@ -100,7 +118,70 @@ export default function AdminProductEdit() {
         setCollections(colList);
       })
       .catch((err) => console.warn('Could not load collections:', err));
+  };
+
+  // Load master categories & collections
+  useEffect(() => {
+    loadCategoriesAndCollections();
   }, []);
+
+  const handleCreateQuickCategory = async (e) => {
+    e.preventDefault();
+    if (!quickCatName.trim()) return;
+    setCreatingQuickCat(true);
+    try {
+      const slug = quickCatName.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const res = await axiosClient.post('/categories', {
+        name: quickCatName.trim(),
+        slug,
+        description: quickCatDesc.trim() || undefined,
+        isActive: true,
+      });
+      const newCat = res?.data || res;
+      const catId = newCat._id || newCat.slug || slug;
+      setQuickCatName('');
+      setQuickCatDesc('');
+      setShowQuickCatModal(false);
+      loadCategoriesAndCollections();
+      setFormData((prev) => ({ ...prev, category: catId }));
+      setSuccessMsg(`Category "${quickCatName}" created and selected!`);
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (err) {
+      console.error('Failed to create quick category:', err);
+      setErrorMsg(err?.message || 'Failed to create category');
+    } finally {
+      setCreatingQuickCat(false);
+    }
+  };
+
+  const handleCreateQuickCollection = async (e) => {
+    e.preventDefault();
+    if (!quickColName.trim()) return;
+    setCreatingQuickCol(true);
+    try {
+      const slug = quickColName.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const res = await axiosClient.post('/collections', {
+        name: quickColName.trim(),
+        slug,
+        description: quickColDesc.trim() || undefined,
+        isActive: true,
+      });
+      const newCol = res?.data || res;
+      const colId = newCol._id || newCol.slug || slug;
+      setQuickColName('');
+      setQuickColDesc('');
+      setShowQuickColModal(false);
+      loadCategoriesAndCollections();
+      setFormData((prev) => ({ ...prev, collection: [colId] }));
+      setSuccessMsg(`Collection "${quickColName}" created and selected!`);
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (err) {
+      console.error('Failed to create quick collection:', err);
+      setErrorMsg(err?.message || 'Failed to create collection');
+    } finally {
+      setCreatingQuickCol(false);
+    }
+  };
 
   useEffect(() => {
     if (isEdit) {
@@ -163,6 +244,102 @@ export default function AdminProductEdit() {
       const updated = [...prev.stones];
       updated[idx][field] = value;
       return { ...prev, stones: updated };
+    });
+  };
+
+  const handleHeroFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const data = new FormData();
+    data.append('images', file);
+
+    setUploadingHero(true);
+    setErrorMsg('');
+    try {
+      const res = await productApi.uploadImages(data);
+      const uploadedUrl =
+        res?.data?.url ||
+        res?.data?.urls?.[0] ||
+        res?.url ||
+        res?.urls?.[0] ||
+        (Array.isArray(res?.data?.files) ? res.data.files[0]?.url : null);
+
+      if (uploadedUrl) {
+        setFormData((prev) => ({
+          ...prev,
+          heroImage: { ...prev.heroImage, url: uploadedUrl },
+        }));
+      }
+    } catch (err) {
+      setErrorMsg(err?.response?.data?.message || 'Failed to upload hero thumbnail');
+    } finally {
+      setUploadingHero(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleGalleryFilesUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const data = new FormData();
+    files.forEach((file) => data.append('images', file));
+
+    setUploadingGallery(true);
+    setErrorMsg('');
+    try {
+      const res = await productApi.uploadImages(data);
+      const newUrls =
+        res?.data?.urls ||
+        res?.urls ||
+        (Array.isArray(res?.data?.files) ? res.data.files.map((f) => f.url) : []) ||
+        (res?.data?.url ? [res.data.url] : []);
+
+      if (newUrls.length > 0) {
+        setFormData((prev) => {
+          const currentUrls = prev.galleryUrls
+            ? prev.galleryUrls.split('\n').map((u) => u.trim()).filter(Boolean)
+            : [];
+          const updated = [...currentUrls, ...newUrls].join('\n');
+          return { ...prev, galleryUrls: updated };
+        });
+      }
+    } catch (err) {
+      setErrorMsg(err?.response?.data?.message || 'Failed to upload gallery images');
+    } finally {
+      setUploadingGallery(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveGalleryUrl = (indexToRemove) => {
+    setFormData((prev) => {
+      const currentUrls = prev.galleryUrls
+        ? prev.galleryUrls.split('\n').map((u) => u.trim()).filter(Boolean)
+        : [];
+      const updated = currentUrls.filter((_, idx) => idx !== indexToRemove).join('\n');
+      return { ...prev, galleryUrls: updated };
+    });
+  };
+
+  const handleSetGalleryAsHero = (urlToSet) => {
+    setFormData((prev) => {
+      const currentHero = typeof prev.heroImage === 'object' ? prev.heroImage?.url : prev.heroImage;
+      const currentUrls = prev.galleryUrls
+        ? prev.galleryUrls.split('\n').map((u) => u.trim()).filter(Boolean)
+        : [];
+      
+      const filteredGallery = currentUrls.filter((u) => u !== urlToSet);
+      if (currentHero && currentHero !== urlToSet) {
+        filteredGallery.push(currentHero);
+      }
+
+      return {
+        ...prev,
+        heroImage: { ...prev.heroImage, url: urlToSet },
+        galleryUrls: filteredGallery.join('\n'),
+      };
     });
   };
 
@@ -329,9 +506,19 @@ export default function AdminProductEdit() {
             </div>
 
             <div>
-              <label className="block font-semibold text-[#2B2320] mb-1">
-                Jewellery Category *
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block font-semibold text-[#2B2320]">
+                  Jewellery Category *
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowQuickCatModal(true)}
+                  className="text-[11px] font-semibold text-[#5C1A2E] hover:text-[#B8935A] flex items-center gap-0.5"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>New Category</span>
+                </button>
+              </div>
               <select
                 required
                 value={formData.category}
@@ -348,9 +535,19 @@ export default function AdminProductEdit() {
             </div>
 
             <div>
-              <label className="block font-semibold text-[#2B2320] mb-1">
-                Primary Collection
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block font-semibold text-[#2B2320]">
+                  Primary Collection
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowQuickColModal(true)}
+                  className="text-[11px] font-semibold text-[#5C1A2E] hover:text-[#B8935A] flex items-center gap-0.5"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>New Collection</span>
+                </button>
+              </div>
               <select
                 value={formData.collection?.[0] || ''}
                 onChange={(e) => setFormData({ ...formData, collection: [e.target.value] })}
@@ -676,44 +873,249 @@ export default function AdminProductEdit() {
         </div>
 
         {/* ── 4. Media & Gallery ── */}
-        <div className="bg-white border border-[#E8E2D9] rounded-sm p-6 space-y-4 shadow-2xs">
-          <h3 className="font-serif text-base font-semibold text-[#2B2320] pb-2 border-b border-[#E8E2D9]">
-            4. Media, Photography & Gallery
-          </h3>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="bg-white border border-[#E8E2D9] rounded-sm p-6 space-y-6 shadow-2xs">
+          <div className="flex items-center justify-between pb-2 border-b border-[#E8E2D9]">
             <div>
-              <label className="block font-semibold text-[#2B2320] mb-1">
-                Hero Image URL (Primary Display) *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.heroImage?.url || ''}
-                onChange={(e) => setFormData({ ...formData, heroImage: { ...formData.heroImage, url: e.target.value } })}
-                placeholder="https://images.unsplash.com/..."
-                className="w-full px-3 py-2 border border-[#D1CCC4] rounded-xs focus:outline-none focus:border-[#5C1A2E]"
-              />
-              {formData.heroImage?.url && (
-                <img
-                  src={formData.heroImage.url}
-                  alt="Hero Preview"
-                  className="w-24 h-24 object-cover rounded-xs border border-[#E8E2D9] mt-2"
+              <h3 className="font-serif text-base font-semibold text-[#2B2320]">
+                4. Media, Photography &amp; Product Images
+              </h3>
+              <p className="text-xs text-[#6B7280] mt-0.5 font-light">
+                Upload primary hero thumbnail and multi-angle gallery images directly from your computer or enter image URLs.
+              </p>
+            </div>
+            <span className="text-[11px] font-medium text-[#B8935A] bg-[#FAF6F0] px-2.5 py-1 rounded-xs border border-[#E8E2D9]">
+              WebP Auto-Optimized (1200×1200 max)
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* ── Primary Hero Thumbnail (5 cols) ── */}
+            <div className="lg:col-span-5 bg-[#FAF6F0] p-4 rounded-sm border border-[#E8E2D9] space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="block font-semibold text-[#2B2320] text-sm">
+                  Hero Thumbnail (Primary Card Image) *
+                </label>
+                {formData.heroImage?.url && (
+                  <span className="text-[10px] text-green-700 bg-green-100 font-semibold px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> Active Hero
+                  </span>
+                )}
+              </div>
+
+              {/* Upload Dropzone / Preview */}
+              <div className="relative border-2 border-dashed border-[#D1CCC4] hover:border-[#5C1A2E] rounded-sm p-4 bg-white text-center transition-colors">
+                <input
+                  id="hero-file-input"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/avif"
+                  onChange={handleHeroFileUpload}
+                  className="hidden"
                 />
-              )}
+
+                {uploadingHero ? (
+                  <div className="py-8 flex flex-col items-center justify-center gap-2 text-[#5C1A2E]">
+                    <Loader2 className="w-7 h-7 animate-spin" />
+                    <p className="text-xs font-medium">Uploading &amp; optimizing image...</p>
+                  </div>
+                ) : formData.heroImage?.url ? (
+                  <div className="space-y-3">
+                    <div className="relative aspect-[4/5] max-w-[200px] mx-auto overflow-hidden rounded-xs border border-[#E8E2D9] bg-[#F9F8F5] shadow-xs group">
+                      <img
+                        src={formData.heroImage.url}
+                        alt="Hero Preview"
+                        className="w-full h-full object-cover object-center"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <label
+                          htmlFor="hero-file-input"
+                          className="p-2 bg-white text-[#2B2320] hover:text-[#5C1A2E] rounded-full cursor-pointer shadow-md transition-transform active:scale-95"
+                          title="Change / Re-upload Image"
+                        >
+                          <Upload className="w-4 h-4" />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, heroImage: { ...formData.heroImage, url: '' } })}
+                          className="p-2 bg-white text-red-600 hover:bg-red-50 rounded-full shadow-md transition-transform active:scale-95"
+                          title="Remove Image"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-2">
+                      <label
+                        htmlFor="hero-file-input"
+                        className="btn btn-outline btn-xs inline-flex items-center gap-1.5 cursor-pointer text-xs"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload New Image</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, heroImage: { ...formData.heroImage, url: '' } })}
+                        className="text-xs text-red-600 hover:underline px-2 py-1"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <label
+                    htmlFor="hero-file-input"
+                    className="py-6 flex flex-col items-center justify-center gap-2 cursor-pointer select-none group"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-[#FAF6F0] group-hover:bg-[#F3EDE2] text-[#B8935A] flex items-center justify-center transition-colors">
+                      <Upload className="w-6 h-6 stroke-[1.5]" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-semibold text-[#5C1A2E] hover:underline block">
+                        Click to Upload Thumbnail Image
+                      </span>
+                      <span className="text-[11px] text-[#6B7280]">
+                        JPEG, PNG, WebP or AVIF (Max 10MB)
+                      </span>
+                    </div>
+                  </label>
+                )}
+              </div>
+
+              {/* Direct URL Fallback */}
+              <div>
+                <label className="block text-[11px] font-medium text-[#6B7280] mb-1">
+                  Or Paste Direct Image URL:
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.heroImage?.url || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      heroImage: { ...formData.heroImage, url: e.target.value },
+                    })
+                  }
+                  placeholder="https://images.unsplash.com/... or /catagories/img1.jpeg"
+                  className="w-full px-3 py-1.5 border border-[#D1CCC4] rounded-xs text-xs focus:outline-none focus:border-[#5C1A2E] bg-white font-mono"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block font-semibold text-[#2B2320] mb-1">
-                Additional Gallery Image URLs (1 per line)
-              </label>
-              <textarea
-                rows={4}
-                value={formData.galleryUrls}
-                onChange={(e) => setFormData({ ...formData, galleryUrls: e.target.value })}
-                placeholder="https://image1.jpg&#10;https://image2.jpg"
-                className="w-full px-3 py-2 border border-[#D1CCC4] rounded-xs focus:outline-none focus:border-[#5C1A2E] font-mono text-[11px]"
-              />
+            {/* ── Additional Gallery Images (7 cols) ── */}
+            <div className="lg:col-span-7 bg-white p-4 rounded-sm border border-[#E8E2D9] space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <label className="block font-semibold text-[#2B2320] text-sm">
+                    Additional Gallery Images &amp; Angles
+                  </label>
+                  <p className="text-[11px] text-[#6B7280]">
+                    Upload multiple side angles, model shots, or certificate close-ups.
+                  </p>
+                </div>
+
+                <label
+                  htmlFor="gallery-files-input"
+                  className="btn btn-primary-gold btn-xs inline-flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>+ Upload Images</span>
+                </label>
+                <input
+                  id="gallery-files-input"
+                  type="file"
+                  multiple
+                  accept="image/jpeg,image/png,image/webp,image/avif"
+                  onChange={handleGalleryFilesUpload}
+                  className="hidden"
+                />
+              </div>
+
+              {/* Uploading indicator */}
+              {uploadingGallery && (
+                <div className="p-3 bg-[#FAF6F0] rounded-xs border border-[#E8E2D9] flex items-center justify-center gap-2 text-[#5C1A2E]">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="text-xs font-medium">Uploading gallery images...</span>
+                </div>
+              )}
+
+              {/* Gallery Image Grid */}
+              {formData.galleryUrls ? (
+                (() => {
+                  const urls = formData.galleryUrls
+                    .split('\n')
+                    .map((u) => u.trim())
+                    .filter(Boolean);
+
+                  if (urls.length === 0) {
+                    return (
+                      <div className="p-6 text-center border border-dashed border-[#E8E2D9] rounded-xs text-[#9CA3AF] text-xs">
+                        No additional gallery images yet. Click "+ Upload Images" above or add URLs below.
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                      {urls.map((imgUrl, idx) => (
+                        <div
+                          key={imgUrl + idx}
+                          className="group relative aspect-square bg-[#F9F8F5] rounded-xs border border-[#E8E2D9] overflow-hidden shadow-2xs"
+                        >
+                          <img
+                            src={imgUrl}
+                            alt={`Gallery ${idx + 1}`}
+                            className="w-full h-full object-cover object-center"
+                            onError={(e) => {
+                              e.target.src =
+                                'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=400&q=80';
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1">
+                            <button
+                              type="button"
+                              onClick={() => handleSetGalleryAsHero(imgUrl)}
+                              className="p-1.5 bg-white text-[#B8935A] hover:text-[#5C1A2E] rounded-full shadow-xs transition-transform active:scale-90"
+                              title="Set as Hero Thumbnail"
+                            >
+                              <Star className="w-3.5 h-3.5 fill-[#B8935A]" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveGalleryUrl(idx)}
+                              className="p-1.5 bg-white text-red-600 hover:bg-red-50 rounded-full shadow-xs transition-transform active:scale-90"
+                              title="Remove Image"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <span className="absolute bottom-1 left-1 bg-black/70 text-white text-[9px] px-1.5 py-0.5 rounded-xs">
+                            #{idx + 1}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()
+              ) : (
+                <div className="p-6 text-center border border-dashed border-[#E8E2D9] rounded-xs text-[#9CA3AF] text-xs">
+                  No additional gallery images yet. Click "+ Upload Images" above or add URLs below.
+                </div>
+              )}
+
+              {/* Gallery URLs Textarea editor */}
+              <div className="pt-2 border-t border-[#F0EBE3]">
+                <label className="block font-medium text-[#2B2320] text-xs mb-1">
+                  Manual Image URLs (1 URL per line):
+                </label>
+                <textarea
+                  rows={3}
+                  value={formData.galleryUrls}
+                  onChange={(e) => setFormData({ ...formData, galleryUrls: e.target.value })}
+                  placeholder="https://image1.jpg&#10;https://image2.jpg"
+                  className="w-full px-3 py-2 border border-[#D1CCC4] rounded-xs focus:outline-none focus:border-[#5C1A2E] font-mono text-[11px] bg-[#FAF6F0]"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -781,6 +1183,137 @@ export default function AdminProductEdit() {
           </button>
         </div>
       </form>
+      {/* ── Quick Category Modal ── */}
+      {showQuickCatModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="bg-white border border-[#E8E2D9] rounded-sm max-w-md w-full p-6 space-y-4 shadow-xl text-xs">
+            <div className="flex items-center justify-between pb-2 border-b border-[#E8E2D9]">
+              <h3 className="font-serif text-base font-semibold text-[#2B2320]">
+                Create New Jewellery Category
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowQuickCatModal(false)}
+                className="text-[#6B7280] hover:text-[#2B2320] text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateQuickCategory} className="space-y-3">
+              <div>
+                <label className="block font-semibold text-[#2B2320] mb-1">
+                  Category Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={quickCatName}
+                  onChange={(e) => setQuickCatName(e.target.value)}
+                  placeholder="e.g. Polki Necklaces, Royal Bangles"
+                  className="w-full px-3 py-2 border border-[#D1CCC4] rounded-xs focus:outline-none focus:border-[#5C1A2E]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-[#2B2320] mb-1">
+                  Description (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  value={quickCatDesc}
+                  onChange={(e) => setQuickCatDesc(e.target.value)}
+                  placeholder="Brief description for category taxonomy..."
+                  className="w-full px-3 py-2 border border-[#D1CCC4] rounded-xs focus:outline-none focus:border-[#5C1A2E]"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-[#E8E2D9]">
+                <button
+                  type="button"
+                  onClick={() => setShowQuickCatModal(false)}
+                  className="btn btn-outline btn-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={creatingQuickCat}
+                  className="btn btn-primary-burgundy btn-xs"
+                >
+                  {creatingQuickCat ? 'Creating…' : 'Create Category'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Quick Collection Modal ── */}
+      {showQuickColModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+          <div className="bg-white border border-[#E8E2D9] rounded-sm max-w-md w-full p-6 space-y-4 shadow-xl text-xs">
+            <div className="flex items-center justify-between pb-2 border-b border-[#E8E2D9]">
+              <h3 className="font-serif text-base font-semibold text-[#2B2320]">
+                Create Heritage Collection
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowQuickColModal(false)}
+                className="text-[#6B7280] hover:text-[#2B2320] text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateQuickCollection} className="space-y-3">
+              <div>
+                <label className="block font-semibold text-[#2B2320] mb-1">
+                  Collection Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={quickColName}
+                  onChange={(e) => setQuickColName(e.target.value)}
+                  placeholder="e.g. Noor-e-Kashmir, Royal Rajputana"
+                  className="w-full px-3 py-2 border border-[#D1CCC4] rounded-xs focus:outline-none focus:border-[#5C1A2E]"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-[#2B2320] mb-1">
+                  Description (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  value={quickColDesc}
+                  onChange={(e) => setQuickColDesc(e.target.value)}
+                  placeholder="Heritage collection narrative..."
+                  className="w-full px-3 py-2 border border-[#D1CCC4] rounded-xs focus:outline-none focus:border-[#5C1A2E]"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-[#E8E2D9]">
+                <button
+                  type="button"
+                  onClick={() => setShowQuickColModal(false)}
+                  className="btn btn-outline btn-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={creatingQuickCol}
+                  className="btn btn-primary-burgundy btn-xs"
+                >
+                  {creatingQuickCol ? 'Creating…' : 'Create Collection'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

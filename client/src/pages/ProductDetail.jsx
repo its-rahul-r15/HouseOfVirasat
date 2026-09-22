@@ -144,7 +144,7 @@ export default function ProductDetail() {
     setTimeout(() => setAddedAnimation(false), 1500);
   };
 
-  const whatsappHref = getWhatsAppLink({ phoneNumber: settings?.whatsappNumber || '919876543210', product });
+  const whatsappHref = getWhatsAppLink({ phoneNumber: settings?.whatsappNumber || '9188292882905', product });
 
   /* ─────────────────────── RENDER ─────────────────────── */
   return (

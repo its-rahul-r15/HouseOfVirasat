@@ -4,6 +4,7 @@ const appSettingsSchema = new mongoose.Schema({
   _singleton: { type: String, default: 'settings', unique: true },
 
   whatsappNumber: { type: String, default: '' },
+  announcementText: { type: String, default: 'Free insured shipping on all orders above ₹5,000 · BIS Hallmarked 925 Silver & 18K Gold' },
 
   codEnabled: { type: Boolean, default: false },
   codMinOrderValue: { type: Number, default: 0 },

@@ -3,7 +3,7 @@ import Product from './product.model.js';
 import Category from '../category/category.model.js';
 import Collection from '../category/collection.model.js';
 import { ApiError } from '../../lib/ApiError.js';
-import { processUpload, deleteFile } from '../../services/image.service.js';
+import { processUpload, deleteFile, UPLOAD_SUBDIRS } from '../../services/image.service.js';
 import { generateSitemap } from '../../services/sitemap.service.js';
 import { PRODUCT_STATUS } from '../../config/constants.js';
 
@@ -233,7 +233,7 @@ export async function duplicateProduct(id, adminId) {
 
 export async function addProductImages(id, files) {
   const processedImages = await Promise.all(
-    files.map((file) => processUpload(file.path)),
+    files.map((file) => processUpload(file.path, UPLOAD_SUBDIRS.PRODUCTS)),
   );
 
   const galleryEntries = processedImages.map((img) => ({ url: img.url, altText: '' }));
@@ -256,6 +256,13 @@ export async function removeProductImage(id, imageUrl) {
   if (!product) throw ApiError.notFound('Product not found');
   deleteFile(imageUrl).catch(() => {});
   return product;
+}
+
+export async function processStandaloneUploads(files) {
+  const processedImages = await Promise.all(
+    files.map((file) => processUpload(file.path, UPLOAD_SUBDIRS.PRODUCTS))
+  );
+  return processedImages;
 }
 
 export async function updateStockQuantity(id, quantity) {

@@ -276,7 +276,7 @@ async function seed() {
     // 5. Seed Settings if empty
     if (AppSettings) {
       const defaultSettings = {
-        whatsappNumber: '+919876543210',
+        whatsappNumber: '+9188292882905',
         freeShippingThreshold: 5000,
         gstRate: 3,
         invoicePrefix: 'HOV-INV',

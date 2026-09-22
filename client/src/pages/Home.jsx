@@ -15,12 +15,16 @@ import {
   Phone,
   Award,
   MessageCircle,
-  Heart,
   RefreshCw,
   Palette,
   Mail,
   Infinity,
   Gift,
+  Play,
+  Users,
+  Calendar,
+  Tag,
+  RotateCcw,
 } from 'lucide-react';
 import ProductCard from '../components/product/ProductCard';
 import CategoryStoryBar from '../components/layout/CategoryStoryBar';
@@ -96,11 +100,63 @@ const TESTIMONIALS = [
   },
 ];
 
+const BRIDAL_HERITAGE_SLIDES = [
+  {
+    subtitle: 'HEER — BRIDAL HERITAGE',
+    titlePrefix: 'Where every thread',
+    titleMid: 'of precious metal',
+    titleItalic: 'carries a century of skill.',
+    description: 'Authentic Jadau & uncut Polki suites set with 24K gold foil, handcrafted by our master artisans.',
+    btnPrimaryText: 'EXPLORE HEER',
+    btnPrimaryLink: '/shop?collection=HEER',
+    btnSecondaryText: 'ALL COLLECTIONS',
+    btnSecondaryLink: '/shop',
+    bgImage: '/banner/BridalHeritage.jpeg',
+  },
+  {
+    subtitle: 'REET — ROYAL JADAU',
+    titlePrefix: 'Timeless heirlooms crafted',
+    titleMid: 'with 24K gold foil & syndicate Polki',
+    titleItalic: 'for royal celebrations.',
+    description: 'Centuries-old techniques preserved by generational master artisans in the heart of Jaipur.',
+    btnPrimaryText: 'EXPLORE REET',
+    btnPrimaryLink: '/shop?collection=REET',
+    btnSecondaryText: 'ALL COLLECTIONS',
+    btnSecondaryLink: '/shop',
+    bgImage: '/banner/BridalHeritage.jpeg',
+  },
+  {
+    subtitle: 'RAJSI — MEENAKARI & POLKI',
+    titlePrefix: 'The vibrant splendour of royal courts,',
+    titleMid: 'hand-painted on silver & gold',
+    titleItalic: 'for the discerning bride.',
+    description: 'Intricate enamel artistry paired with brilliant gemstones for the regal jewellery connoisseur.',
+    btnPrimaryText: 'EXPLORE RAJSI',
+    btnPrimaryLink: '/shop?collection=RAJSI',
+    btnSecondaryText: 'ALL COLLECTIONS',
+    btnSecondaryLink: '/shop',
+    bgImage: '/banner/BridalHeritage.jpeg',
+  },
+  {
+    subtitle: 'NOOR — FINE GOLD HEIRLOOMS',
+    titlePrefix: 'Unmatched brilliance',
+    titleMid: 'and hallmarked purity',
+    titleItalic: 'for your unforgettable moments.',
+    description: 'Certified hallmarked gold jewellery designed to be treasured across lifetimes.',
+    btnPrimaryText: 'EXPLORE NOOR',
+    btnPrimaryLink: '/shop?metal=GOLD',
+    btnSecondaryText: 'ALL COLLECTIONS',
+    btnSecondaryLink: '/shop',
+    bgImage: '/banner/BridalHeritage.jpeg',
+  },
+];
+
 /* ─────────────────────────────────────────────────────────────────────────── */
 /*  HOME COMPONENT                                                             */
 /* ─────────────────────────────────────────────────────────────────────────── */
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [bridalSlide, setBridalSlide] = useState(0);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [collections, setCollections] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -118,6 +174,15 @@ export default function Home() {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
     }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  /* Auto-rotate Bridal Heritage */
+  useEffect(() => {
+    if (BRIDAL_HERITAGE_SLIDES.length <= 1) return;
+    const timer = setInterval(() => {
+      setBridalSlide((prev) => (prev + 1) % BRIDAL_HERITAGE_SLIDES.length);
+    }, 4500);
     return () => clearInterval(timer);
   }, []);
 
@@ -211,18 +276,18 @@ export default function Home() {
             {/* Bottom gradient for trust badges */}
             <div className="absolute inset-x-0 bottom-0 h-16 sm:h-28 bg-gradient-to-t from-black/75 to-transparent pointer-events-none" />
 
-            {/* ── LEFT TEXT BLOCK (Responsive & Small on Mobile) ── */}
-            <div className="absolute inset-0 flex flex-col justify-center px-3.5 sm:px-10 lg:px-14 max-w-[65%] xs:max-w-[58%] sm:max-w-[48%] lg:max-w-[42%] pointer-events-none">
+            {/* ── LEFT TEXT BLOCK (Responsive & Prominently Sized) ── */}
+            <div className="absolute inset-0 flex flex-col justify-center px-4 sm:px-10 lg:px-16 max-w-[85%] xs:max-w-[75%] sm:max-w-[60%] lg:max-w-[52%] pointer-events-none">
               {/* Eyebrow — thin, tracked, uppercase gold */}
               <p style={{
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontSize: 'clamp(6.5px, 0.85vw, 9.5px)',
-                letterSpacing: '0.22em',
-                fontWeight: 300,
+                fontSize: 'clamp(8.5px, 1.1vw, 12.5px)',
+                letterSpacing: '0.24em',
+                fontWeight: 600,
                 textTransform: 'uppercase',
                 color: '#D4B884',
-                marginBottom: 'clamp(1px, 0.5vw, 6px)',
-                lineHeight: 1,
+                marginBottom: 'clamp(3px, 0.6vw, 8px)',
+                lineHeight: 1.2,
               }}>
                 A Legacy Crafted in Every Detail
               </p>
@@ -230,13 +295,14 @@ export default function Home() {
               {/* Line 1 — bold upright serif, white */}
               <h1 style={{
                 fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: 'clamp(0.95rem, 2.6vw, 3.5rem)',
+                fontSize: 'clamp(1.5rem, 4.2vw, 4.2rem)',
                 fontWeight: 700,
                 fontStyle: 'normal',
                 color: '#ffffff',
-                lineHeight: 1.05,
-                marginBottom: '1px',
+                lineHeight: 1.08,
+                marginBottom: '2px',
                 letterSpacing: '-0.01em',
+                textShadow: '0 2px 10px rgba(0,0,0,0.5)',
               }}>
                 Timeless Jewellery
               </h1>
@@ -244,13 +310,14 @@ export default function Home() {
               {/* Line 2 — italic serif, gold */}
               <h1 style={{
                 fontFamily: "'Cormorant Garamond', Georgia, serif",
-                fontSize: 'clamp(0.95rem, 2.6vw, 3.5rem)',
+                fontSize: 'clamp(1.5rem, 4.2vw, 4.2rem)',
                 fontWeight: 600,
                 fontStyle: 'italic',
-                color: '#C9A84C',
-                lineHeight: 1.05,
-                marginBottom: 'clamp(3px, 0.9vw, 14px)',
+                color: '#E0C588',
+                lineHeight: 1.08,
+                marginBottom: 'clamp(6px, 1.2vw, 16px)',
                 letterSpacing: '-0.01em',
+                textShadow: '0 2px 10px rgba(0,0,0,0.5)',
               }}>
                 For Every You
               </h1>
@@ -258,12 +325,13 @@ export default function Home() {
               {/* Subtitle — light sans */}
               <p style={{
                 fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontSize: 'clamp(7px, 0.8vw, 12px)',
+                fontSize: 'clamp(10px, 1.2vw, 15px)',
                 fontWeight: 300,
-                color: 'rgba(255,255,255,0.85)',
-                lineHeight: 1.25,
-                marginBottom: 'clamp(4px, 1.2vw, 18px)',
-                maxWidth: '280px',
+                color: 'rgba(255,255,255,0.92)',
+                lineHeight: 1.38,
+                marginBottom: 'clamp(8px, 1.5vw, 22px)',
+                maxWidth: '380px',
+                textShadow: '0 1px 4px rgba(0,0,0,0.6)',
               }}>
                 Tradition, Craftsmanship<br />and Modern Elegance — Only at Virasat.
               </p>
@@ -275,22 +343,23 @@ export default function Home() {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '4px',
-                  border: '1px solid #C9A84C',
+                  gap: '6px',
+                  border: '1.5px solid #C9A84C',
                   color: '#ffffff',
-                  padding: 'clamp(3px, 0.6vw, 9px) clamp(8px, 1.2vw, 18px)',
+                  padding: 'clamp(6px, 0.8vw, 11px) clamp(14px, 1.5vw, 24px)',
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontSize: 'clamp(6.5px, 0.65vw, 10px)',
+                  fontSize: 'clamp(9px, 0.9vw, 12px)',
                   fontWeight: 600,
                   letterSpacing: '0.14em',
                   textTransform: 'uppercase',
                   transition: 'all 0.3s',
-                  background: 'transparent',
+                  background: 'rgba(26, 10, 5, 0.4)',
+                  backdropFilter: 'blur(4px)',
                 }}
                 onMouseEnter={e => { e.currentTarget.style.background = '#C9A84C'; e.currentTarget.style.color = '#1a0a05'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#ffffff'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(26, 10, 5, 0.4)'; e.currentTarget.style.color = '#ffffff'; }}
               >
-                Explore Collections <ArrowRight className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
+                <span>Explore Collections</span> <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
               </Link>
             </div>
 
@@ -363,11 +432,10 @@ export default function Home() {
                   key={idx}
                   type="button"
                   onClick={() => setCurrentSlide(idx)}
-                  className={`block rounded-full transition-all duration-300 ${
-                    currentSlide === idx
+                  className={`block rounded-full transition-all duration-300 ${currentSlide === idx
                       ? 'w-4 sm:w-7 h-1 sm:h-2.5 bg-[#C9A84C] shadow-sm'
                       : 'w-1 sm:w-2.5 h-1 sm:h-2.5 bg-white/70 hover:bg-white shadow-sm'
-                  }`}
+                    }`}
                   aria-label={`Slide ${idx + 1}`}
                 />
               ))}
@@ -397,26 +465,26 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
 
             {/* ── GOLD & DIAMOND CARD ── */}
-            <div className="rounded-sm overflow-hidden bg-[#4A3010]" style={{border:'1px solid rgba(201,168,76,0.25)'}}>
+            <div className="rounded-sm overflow-hidden bg-[#4A3010]" style={{ border: '1px solid rgba(201,168,76,0.25)' }}>
               {/* Card Header */}
               <div className="flex items-center justify-between gap-2 px-3.5 sm:px-5 pt-3.5 sm:pt-5 pb-2.5 sm:pb-4">
                 <div className="min-w-0">
-                  <h3 className="font-serif text-lg sm:text-xl lg:text-2xl font-semibold leading-tight truncate" style={{color:'#ffffff'}}>
+                  <h3 className="font-serif text-lg sm:text-xl lg:text-2xl font-semibold leading-tight truncate text-white" style={{ color: '#ffffff' }}>
                     Fine Gold &amp; Diamond Jewellery
                   </h3>
-                  <p className="text-[11px] sm:text-xs text-[#D4B884] mt-0.5 font-light truncate">Modern Elegance. Timeless Value.</p>
+                  <p className="text-[11px] sm:text-xs text-white/90 mt-0.5 font-light truncate" style={{ color: '#ffffff' }}>Modern Elegance. Timeless Value.</p>
                 </div>
                 <Link
                   to="/shop?metal=GOLD"
-                  className="shrink-0 inline-flex items-center gap-1 text-[#C9A84C] text-[8.5px] sm:text-[10px] uppercase tracking-[0.14em] font-semibold px-2 sm:px-3 py-1 sm:py-1.5 whitespace-nowrap transition-all hover:bg-[#C9A84C] hover:text-[#1a0a05]"
-                  style={{border:'1px solid #C9A84C'}}
+                  className="shrink-0 inline-flex items-center gap-1 text-white text-[8.5px] sm:text-[10px] uppercase tracking-[0.14em] font-semibold px-2 sm:px-3 py-1 sm:py-1.5 whitespace-nowrap transition-all hover:bg-white hover:text-[#1a0a05]"
+                  style={{ border: '1px solid #ffffff', color: '#ffffff' }}
                 >
                   Explore Gold <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 </Link>
               </div>
 
               {/* Category thumbnails grid (6 items row, responsive) */}
-              <div className="grid grid-cols-6 divide-x divide-white/10" style={{borderTop:'1px solid rgba(201,168,76,0.2)'}}>
+              <div className="grid grid-cols-6 divide-x divide-white/10" style={{ borderTop: '1px solid rgba(201,168,76,0.2)' }}>
                 {GOLD_CATEGORIES.map((cat) => (
                   <Link
                     key={cat.slug + '-gold'}
@@ -433,34 +501,34 @@ export default function Home() {
                         height="100"
                       />
                     </div>
-                    <p className="text-[8px] xs:text-[9px] sm:text-[10px] font-semibold text-white leading-tight w-full truncate">{cat.label}</p>
-                    <p className="text-[7px] xs:text-[7.5px] sm:text-[9px] leading-tight mt-0.5 w-full truncate" style={{color:'rgba(212,184,132,0.75)'}}>{cat.sublabel}</p>
+                    <p className="text-[8px] xs:text-[9px] sm:text-[10px] font-semibold text-white leading-tight w-full truncate" style={{ color: '#ffffff' }}>{cat.label}</p>
+                    <p className="text-[7px] xs:text-[7.5px] sm:text-[9px] leading-tight mt-0.5 w-full truncate text-white/90" style={{ color: '#ffffff' }}>{cat.sublabel}</p>
                   </Link>
                 ))}
               </div>
             </div>
 
             {/* ── 925 SILVER CARD ── */}
-            <div className="rounded-sm overflow-hidden bg-[#1B3D2A]" style={{border:'1px solid rgba(143,212,168,0.25)'}}>
+            <div className="rounded-sm overflow-hidden bg-[#1B3D2A]" style={{ border: '1px solid rgba(143,212,168,0.25)' }}>
               {/* Card Header */}
               <div className="flex items-center justify-between gap-2 px-3.5 sm:px-5 pt-3.5 sm:pt-5 pb-2.5 sm:pb-4">
                 <div className="min-w-0">
-                  <h3 className="font-serif text-lg sm:text-xl lg:text-2xl font-semibold leading-tight truncate" style={{color:'#ffffff'}}>
+                  <h3 className="font-serif text-lg sm:text-xl lg:text-2xl font-semibold leading-tight truncate text-white" style={{ color: '#ffffff' }}>
                     925 Silver Kundan &amp; Polki
                   </h3>
-                  <p className="text-[11px] sm:text-xs text-[#8FD4A8] mt-0.5 font-light truncate">Heritage Artistry. Everyday Luxury.</p>
+                  <p className="text-[11px] sm:text-xs text-white/90 mt-0.5 font-light truncate" style={{ color: '#ffffff' }}>Heritage Artistry. Everyday Luxury.</p>
                 </div>
                 <Link
                   to="/shop?metal=SILVER"
-                  className="shrink-0 inline-flex items-center gap-1 text-[#8FD4A8] text-[8.5px] sm:text-[10px] uppercase tracking-[0.14em] font-semibold px-2 sm:px-3 py-1 sm:py-1.5 whitespace-nowrap transition-all hover:bg-[#8FD4A8] hover:text-[#1B3D2A]"
-                  style={{border:'1px solid #8FD4A8'}}
+                  className="shrink-0 inline-flex items-center gap-1 text-white text-[8.5px] sm:text-[10px] uppercase tracking-[0.14em] font-semibold px-2 sm:px-3 py-1 sm:py-1.5 whitespace-nowrap transition-all hover:bg-white hover:text-[#1B3D2A]"
+                  style={{ border: '1px solid #ffffff', color: '#ffffff' }}
                 >
                   Explore Silver <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                 </Link>
               </div>
 
               {/* Category thumbnails grid (6 items row, responsive) */}
-              <div className="grid grid-cols-6 divide-x divide-white/10" style={{borderTop:'1px solid rgba(143,212,168,0.2)'}}>
+              <div className="grid grid-cols-6 divide-x divide-white/10" style={{ borderTop: '1px solid rgba(143,212,168,0.2)' }}>
                 {SILVER_CATEGORIES.map((cat) => (
                   <Link
                     key={cat.slug + '-silver'}
@@ -477,8 +545,8 @@ export default function Home() {
                         height="100"
                       />
                     </div>
-                    <p className="text-[8px] xs:text-[9px] sm:text-[10px] font-semibold text-white leading-tight w-full truncate">{cat.label}</p>
-                    <p className="text-[7px] xs:text-[7.5px] sm:text-[9px] leading-tight mt-0.5 w-full truncate" style={{color:'rgba(143,212,168,0.75)'}}>{cat.sublabel}</p>
+                    <p className="text-[8px] xs:text-[9px] sm:text-[10px] font-semibold text-white leading-tight w-full truncate" style={{ color: '#ffffff' }}>{cat.label}</p>
+                    <p className="text-[7px] xs:text-[7.5px] sm:text-[9px] leading-tight mt-0.5 w-full truncate text-white/90" style={{ color: '#ffffff' }}>{cat.sublabel}</p>
                   </Link>
                 ))}
               </div>
@@ -563,232 +631,809 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── 4. SHOP BY CATEGORY ── */}
-      <section className="min-h-screen bg-[#FAF6F0] flex flex-col justify-center py-8">
+      {/* ── 4. OUR CATEGORIES ── */}
+      <section className="bg-[#FAF6F0] py-10 sm:py-14">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-8 w-full">
-          <div className="text-center max-w-md mx-auto mb-6">
+          <div className="text-center max-w-md mx-auto mb-6 sm:mb-8">
             <div className="flex items-center justify-center gap-3 mb-2">
               <span className="w-8 h-[1px] bg-[#D1CCC0]" />
               <Sparkles className="w-4 h-4 text-[#5C1A2E]" />
               <span className="w-8 h-[1px] bg-[#D1CCC0]" />
             </div>
-            <h2 className="font-serif text-2xl sm:text-3xl text-[#2B2320] font-semibold">Shop by Category</h2>
+            <h2 className="font-serif text-2xl sm:text-3xl text-[#2B2320] font-semibold">Our Categories</h2>
             <p className="text-sm text-[#6B7280] mt-1 font-light">Explore our handcrafted collections by jewellery type.</p>
           </div>
 
-          {/* Hero editorial category */}
-          <div className="mb-4">
+          {/* 1 Long Top Featured Editorial Category */}
+          <div className="mb-3 sm:mb-6">
             <Link
-              to="/shop?category=earrings"
-              className="group relative block h-[200px] sm:h-[280px] bg-[#F9F8F5] overflow-hidden rounded-sm"
+              to="/shop?category=necklaces"
+              className="group relative block h-[220px] sm:h-[340px] lg:h-[380px] overflow-hidden rounded-xl shadow-md border border-[#E8DFD3]"
             >
+              {/* 100% Full Cover Image */}
               <img
-                src="https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=1400&q=85"
-                alt="Earrings"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                src="/catagories/img1.jpeg"
+                alt="Statement Necklaces"
+                className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                 loading="lazy"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
-              <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 text-white">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-[#B8935A] font-bold block">Statement Jadau</span>
-                <h3 className="font-serif text-xl sm:text-3xl font-medium">Handcrafted Polki & Emerald Earrings</h3>
-                <span className="text-xs text-[#E5E2DA] mt-0.5 inline-block group-hover:underline">Browse Earrings →</span>
+
+              {/* Transparent subtle bottom gradient strictly for text legibility */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+
+              {/* Floating Transparent Text */}
+              <div className="absolute bottom-3 left-3.5 right-3.5 sm:bottom-6 sm:left-6 lg:bottom-8 lg:left-8 text-white z-10 max-w-2xl">
+                <span className="text-[9.5px] sm:text-xs uppercase tracking-[0.22em] text-[#E0C588] font-bold block mb-0.5 drop-shadow-md">
+                  STATEMENT JADAU
+                </span>
+                <h3 className="font-serif text-lg sm:text-3xl lg:text-4xl font-medium text-white leading-tight drop-shadow-lg" style={{ color: '#ffffff' }}>
+                  Handcrafted Polki &amp; Emerald Suites
+                </h3>
+                <span className="text-xs sm:text-sm text-white mt-1 sm:mt-1.5 inline-flex items-center gap-1.5 font-medium group-hover:underline drop-shadow-md transition-colors" style={{ color: '#ffffff' }}>
+                  <span style={{ color: '#ffffff' }}>Explore Collection</span>
+                  <span className="transition-transform group-hover:translate-x-1.5" style={{ color: '#ffffff' }}>→</span>
+                </span>
               </div>
             </Link>
           </div>
 
-          {/* Category Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-            {(categories.length > 0 ? categories.slice(0, 4) : [
-              { name: 'Necklaces', description: 'Chokers & Raani Haar', slug: 'necklaces', image: { url: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80' } },
-              { name: 'Rings', description: 'Cocktail & Gold Bands', slug: 'rings', image: { url: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=600&q=80' } },
-              { name: 'Bangles', description: 'Kadas & Filigree', slug: 'bangles', image: { url: 'https://images.unsplash.com/photo-1535632787350-4e68ef0ac584?auto=format&fit=crop&w=600&q=80' } },
-              { name: 'Bridal', description: 'Wedding Sets', slug: 'bridal', image: { url: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=600&q=80' } },
-            ]).map((cat) => (
+          {/* 4 Category Boxes in 1 Line */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-5">
+            {[
+              {
+                name: 'Rings',
+                description: 'Symbols of Forever',
+                slug: 'rings',
+                img: '/catagories/img2.jpeg',
+              },
+              {
+                name: 'Earrings',
+                description: 'Everyday to Statement',
+                slug: 'earrings',
+                img: '/catagories/img3.jpeg',
+              },
+              {
+                name: 'Bangles',
+                description: 'Tradition on Your Wrist',
+                slug: 'bangles',
+                img: '/catagories/img4.jpeg',
+              },
+              {
+                name: 'Bridal',
+                description: 'Royal Wedding Sets',
+                slug: 'bridal',
+                img: '/catagories/img5.jpeg',
+              },
+            ].map((cat) => (
               <Link
                 key={cat.slug}
                 to={`/shop?category=${cat.slug}`}
-                className="group relative h-[160px] sm:h-[220px] bg-[#F9F8F5] overflow-hidden rounded-sm"
+                className="group relative block h-[180px] xs:h-[200px] sm:h-[260px] lg:h-[290px] overflow-hidden rounded-xl shadow-sm border border-[#E8DFD3] transition-all hover:shadow-md hover:border-[#845E35]"
               >
+                {/* 100% Full Cover Image */}
                 <img
-                  src={cat.image?.url || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80'}
+                  src={cat.img}
                   alt={cat.name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-108"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <div className="absolute bottom-2.5 left-3 right-3 text-white z-10">
-                  <span className="text-[9px] uppercase tracking-[0.16em] text-[#B8935A] font-bold">{cat.name}</span>
-                  <h4 className="font-serif text-sm sm:text-base font-medium leading-tight">{cat.description || cat.name}</h4>
+
+                {/* Soft bottom transparent shadow so text is crisp */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+
+                {/* Floating Transparent Text on Image */}
+                <div className="absolute bottom-2.5 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 text-white z-10" style={{ color: '#ffffff' }}>
+                  <span className="text-[10.5px] sm:text-xs uppercase tracking-[0.18em] text-[#E0C588] font-bold block drop-shadow-md leading-tight">
+                    {cat.name}
+                  </span>
+                  <h4 className="font-serif text-[11.5px] sm:text-sm lg:text-base font-medium leading-tight text-white mt-0.5 drop-shadow-lg truncate" style={{ color: '#ffffff' }}>
+                    {cat.description}
+                  </h4>
                 </div>
               </Link>
             ))}
           </div>
+
         </div>
       </section>
 
-      {/* ── 5. FEATURED COLLECTION — Dynamic editorial block (Spec §2.5) ────────── */}
-      <section className="py-16 bg-white overflow-hidden">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 items-stretch rounded-sm overflow-hidden border border-[#E5E2DA]">
-            {/* Image */}
-            <div className="lg:col-span-7 relative h-[280px] sm:h-[360px] lg:h-[420px] overflow-hidden">
-              <img
-                src={collections[0]?.heroImage?.url || "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=1200&q=85"}
-                alt={collections[0]?.name || "REET — Bridal Heritage"}
-                className="w-full h-full object-cover object-center"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20" />
-              <div className="absolute top-5 left-5">
-                <span className="py-1 px-3 bg-black/50 backdrop-blur-md text-[10px] uppercase tracking-[0.2em] font-semibold text-[#D4B884] border border-white/15 rounded-xs">
-                  Featured Collection
+      {/* ── 6. BRIDAL HERITAGE ──────────────────────────────────────────────── */}
+      <section className="py-6 sm:py-16 bg-[#FAF6F0] border-b border-[#E5E2DA] overflow-hidden">
+        
+        {/* ── MOBILE VIEW (< md) with Auto-scrolling slides ── */}
+        <div className="block md:hidden bg-[#FAF6F0] space-y-4">
+          
+          {/* 1. Mobile Portrait Banner with BridalHeritage_mobile.jpeg */}
+          <div className="relative w-full h-[360px] xs:h-[390px] overflow-hidden bg-[#160d1b]">
+            <img
+              src="/banner/BridalHeritage_mobile.jpeg"
+              alt="Bridal Heritage - House of Virasat"
+              className="w-full h-full object-cover object-top block"
+            />
+            {/* Subtle dark gradient overlay to guarantee text readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/50 to-black/85 pointer-events-none" />
+
+            {/* Overlaid Dynamic Slide Content - Fully Centered */}
+            <div
+              key={bridalSlide}
+              className="absolute inset-0 p-4 pt-5 pb-3 flex flex-col justify-between text-white animate-[fadeIn_0.5s_ease] text-center"
+            >
+              {/* Centered Top Copy */}
+              <div className="space-y-2 flex flex-col items-center text-center">
+                <div className="flex items-center justify-center gap-1.5">
+                  <span className="w-4 h-[1px] bg-[#E0C588]" />
+                  <span className="text-[9.5px] font-bold tracking-[0.2em] uppercase text-[#E0C588]">
+                    {BRIDAL_HERITAGE_SLIDES[bridalSlide].subtitle}
+                  </span>
+                  <span className="w-4 h-[1px] bg-[#E0C588]" />
+                </div>
+
+                <h2 className="font-serif text-[22px] sm:text-[26px] leading-[1.15] text-white font-normal tracking-tight drop-shadow-md text-center max-w-[300px] mx-auto" style={{ color: '#ffffff' }}>
+                  {BRIDAL_HERITAGE_SLIDES[bridalSlide].titlePrefix}{' '}
+                  {BRIDAL_HERITAGE_SLIDES[bridalSlide].titleMid && (
+                    <span>{BRIDAL_HERITAGE_SLIDES[bridalSlide].titleMid} </span>
+                  )}
+                  <span className="italic text-[#F3DBA8] font-serif block sm:inline" style={{ color: '#F3DBA8' }}>
+                    {BRIDAL_HERITAGE_SLIDES[bridalSlide].titleItalic}
+                  </span>
+                </h2>
+
+                <p className="text-[11px] text-white/90 leading-snug font-light max-w-[280px] mx-auto drop-shadow-xs text-center line-clamp-2" style={{ color: '#ffffff' }}>
+                  {BRIDAL_HERITAGE_SLIDES[bridalSlide].description}
+                </p>
+
+                {/* Action Buttons Centered Side-by-Side with Short Text */}
+                <div className="pt-1.5 flex flex-row items-center justify-center gap-2 w-full max-w-[280px] mx-auto">
+                  <Link
+                    to={BRIDAL_HERITAGE_SLIDES[bridalSlide].btnPrimaryLink}
+                    className="inline-flex items-center justify-center gap-1 px-3 py-2 bg-[#845E35] hover:bg-[#6E4B27] text-white text-[10px] font-bold uppercase tracking-[0.1em] rounded-xs shadow-md transition-all active:scale-98 flex-1 text-center"
+                  >
+                    <span>Explore</span>
+                    <ArrowRight className="w-2.5 h-2.5 text-[#E6C697]" />
+                  </Link>
+
+                  <Link
+                    to={BRIDAL_HERITAGE_SLIDES[bridalSlide].btnSecondaryLink}
+                    className="inline-flex items-center justify-center px-2.5 py-2 border border-white/60 text-white hover:bg-white hover:text-[#1a0a05] text-[9.5px] font-semibold uppercase tracking-[0.1em] rounded-xs backdrop-blur-xs transition-all active:scale-98 flex-1 text-center"
+                  >
+                    <span>View All</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Bottom Slide Indicators */}
+              <div className="flex items-center justify-between pt-2.5 border-t border-white/20">
+                <div className="flex items-center gap-1.5">
+                  {BRIDAL_HERITAGE_SLIDES.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setBridalSlide(idx)}
+                      className={`h-1.5 rounded-full transition-all duration-500 ${
+                        bridalSlide === idx ? 'w-6 bg-[#E0C588]' : 'w-2 bg-white/40'
+                      }`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono text-[10px] font-semibold text-[#E0C588] tracking-wider">
+                    0{bridalSlide + 1} <span className="text-white/40">/</span> 0{BRIDAL_HERITAGE_SLIDES.length}
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* 2. Below Banner Area (Cream) */}
+          <div className="px-4 pb-4 space-y-4">
+            
+            {/* 4 Trust Badges in a single 4-column row */}
+            <div className="grid grid-cols-4 gap-1.5 text-center py-3.5 bg-white/70 backdrop-blur-xs border border-[#E8DFD3] rounded-xl shadow-2xs">
+              {/* Authentic Craftsmanship */}
+              <div className="flex flex-col items-center gap-1 p-1">
+                <div className="w-7 h-7 rounded-full bg-[#FAF4EB] text-[#845E35] flex items-center justify-center">
+                  <Sparkles className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[9.5px] font-medium text-[#241B16] leading-tight">
+                  Authentic<br />Craftsmanship
+                </span>
+              </div>
+
+              {/* Heritage Designs */}
+              <div className="flex flex-col items-center gap-1 p-1 border-l border-[#E8DFD3]">
+                <div className="w-7 h-7 rounded-full bg-[#FAF4EB] text-[#845E35] flex items-center justify-center">
+                  <Gem className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[9.5px] font-medium text-[#241B16] leading-tight">
+                  Heritage<br />Designs
+                </span>
+              </div>
+
+              {/* Trusted by Generations */}
+              <div className="flex flex-col items-center gap-1 p-1 border-l border-[#E8DFD3]">
+                <div className="w-7 h-7 rounded-full bg-[#FAF4EB] text-[#845E35] flex items-center justify-center">
+                  <Users className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[9.5px] font-medium text-[#241B16] leading-tight">
+                  Trusted by<br />Generations
+                </span>
+              </div>
+
+              {/* Certified Materials */}
+              <div className="flex flex-col items-center gap-1 p-1 border-l border-[#E8DFD3]">
+                <div className="w-7 h-7 rounded-full bg-[#FAF4EB] text-[#845E35] flex items-center justify-center">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[9.5px] font-medium text-[#241B16] leading-tight">
+                  Certified<br />Materials
                 </span>
               </div>
             </div>
 
-            {/* Copy */}
-            <div className="lg:col-span-5 flex flex-col justify-center p-8 sm:p-12 bg-[#FAF6F0]">
-              <span className="text-[10.5px] uppercase tracking-[0.22em] font-bold text-[#5C1A2E]">
-                {collections[0]?.name || 'REET — Bridal Heritage'}
-              </span>
-              <h2 className="font-serif text-2xl sm:text-3xl text-[#2B2320] font-medium leading-snug mt-2 mb-4">
-                Where every thread of precious metal carries a century of skill.
-              </h2>
-              <p className="text-xs sm:text-sm text-[#4A5568] leading-relaxed">
-                {collections[0]?.description || 'Handcrafted in authentic Jadau by master karigar families, each bridal piece carries uncut Polki stones set with 24K gold foil — exactly as it has been for three hundred years.'}
+            {/* Micro Footer Legend */}
+            <div className="pt-2 text-center space-y-1">
+              <div className="flex items-center justify-center gap-2">
+                <span className="w-8 h-[1px] bg-[#D4C3B3]" />
+                <span className="text-[9px] uppercase tracking-[0.24em] font-semibold text-[#8C7A6B]">
+                  More Than Jewellery
+                </span>
+                <span className="w-8 h-[1px] bg-[#D4C3B3]" />
+              </div>
+              <p className="font-serif text-[12px] uppercase tracking-[0.2em] font-bold text-[#845E35]">
+                A Legacy
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 mt-7">
-                <Link to={`/shop?collection=${(collections[0]?.slug || 'reet').toUpperCase()}`} className="btn btn-primary-gold btn-sm flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Explore {(collections[0]?.name || 'REET').split('—')[0].trim()}</span>
-                </Link>
-                <Link to="/shop" className="btn btn-outline btn-sm">
-                  All Collections
-                </Link>
-              </div>
             </div>
+
           </div>
+
+        </div>
+
+        {/* ── DESKTOP & TABLET VIEW (>= md) ── */}
+        <div className="hidden md:block max-w-[1400px] mx-auto px-4 sm:px-8">
+          
+          {/* Main Master Card Container */}
+          <div className="relative rounded-[20px] sm:rounded-[30px] overflow-hidden bg-[#160d1b] border border-[#E5DFD5] shadow-2xl">
+            
+            {/* Background Image Layer */}
+            <div className="absolute inset-0 z-0">
+              <img
+                src={BRIDAL_HERITAGE_SLIDES[bridalSlide].bgImage}
+                alt="Bridal Heritage"
+                className="w-full h-full object-cover object-left-center transition-all duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent lg:to-transparent" />
+            </div>
+
+            {/* Content Split: Left Editorial & Right Luxury Arch Card */}
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 min-h-[500px] lg:min-h-[560px] items-stretch">
+              
+              {/* Left Side: Editorial Overlays */}
+              <div className="lg:col-span-6 p-6 sm:p-10 lg:p-12 flex flex-col justify-between text-white">
+                {/* Top Badge */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-[1px] bg-white/60" />
+                    <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] font-semibold text-white/90">
+                      A Legacy in Every Detail
+                    </span>
+                    <span className="w-6 h-[1px] bg-white/60" />
+                  </div>
+                </div>
+
+                {/* Slide dashes */}
+                <div className="flex items-center gap-2 pt-6">
+                  {BRIDAL_HERITAGE_SLIDES.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setBridalSlide(idx)}
+                      className={`h-1.5 rounded-full transition-all duration-500 ${
+                        bridalSlide === idx ? 'w-10 bg-[#E0C588]' : 'w-4 bg-white/40 hover:bg-white/70'
+                      }`}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Right Side: Transparent Panel over Background Image */}
+              <div className="lg:col-span-6 relative flex flex-col justify-between bg-black/35 lg:bg-black/40 backdrop-blur-xs lg:rounded-l-[32px] p-6 sm:p-10 lg:p-12 border-t lg:border-t-0 lg:border-l border-white/15 text-white">
+                
+                {/* Top Pagination & Arrows */}
+                <div className="flex items-center justify-between gap-4 pb-5 border-b border-white/15">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#E0C588] font-bold text-xs uppercase tracking-[0.2em] drop-shadow-xs">
+                      {BRIDAL_HERITAGE_SLIDES[bridalSlide].subtitle}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-xs font-semibold text-[#E0C588] tracking-widest drop-shadow-xs">
+                      0{bridalSlide + 1} <span className="text-white/40">/</span> 0{BRIDAL_HERITAGE_SLIDES.length}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setBridalSlide((prev) => (prev === 0 ? BRIDAL_HERITAGE_SLIDES.length - 1 : prev - 1))}
+                        className="w-8 h-8 rounded-full border border-white/30 bg-black/40 text-white hover:bg-[#C9A84C] hover:text-[#1a0a05] hover:border-[#C9A84C] flex items-center justify-center transition-all shadow-xs active:scale-95"
+                        aria-label="Previous Slide"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setBridalSlide((prev) => (prev + 1) % BRIDAL_HERITAGE_SLIDES.length)}
+                        className="w-8 h-8 rounded-full border border-white/30 bg-black/40 text-white hover:bg-[#C9A84C] hover:text-[#1a0a05] hover:border-[#C9A84C] flex items-center justify-center transition-all shadow-xs active:scale-95"
+                        aria-label="Next Slide"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Main Headline & Description */}
+                <div className="py-5 sm:py-7 space-y-4">
+                  <h2 className="font-serif text-2xl sm:text-3xl lg:text-[2.25rem] text-white font-medium leading-[1.22] text-balance drop-shadow-md" style={{ color: '#ffffff' }}>
+                    <span className="text-white" style={{ color: '#ffffff' }}>
+                      {BRIDAL_HERITAGE_SLIDES[bridalSlide].titlePrefix}{' '}
+                    </span>
+                    {BRIDAL_HERITAGE_SLIDES[bridalSlide].titleMid && (
+                      <span className="text-white" style={{ color: '#ffffff' }}>
+                        {BRIDAL_HERITAGE_SLIDES[bridalSlide].titleMid}{' '}
+                      </span>
+                    )}
+                    <span className="italic font-normal text-[#F3DBA8]" style={{ color: '#F3DBA8' }}>
+                      {BRIDAL_HERITAGE_SLIDES[bridalSlide].titleItalic}
+                    </span>
+                  </h2>
+
+                  <p className="text-xs sm:text-sm text-white leading-relaxed max-w-lg font-light drop-shadow-sm" style={{ color: '#ffffff' }}>
+                    {BRIDAL_HERITAGE_SLIDES[bridalSlide].description}
+                  </p>
+
+                  {/* Buttons */}
+                  <div className="pt-2 flex flex-wrap items-center gap-3">
+                    <Link
+                      to={BRIDAL_HERITAGE_SLIDES[bridalSlide].btnPrimaryLink}
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-[#C9A84C] hover:bg-[#B8935A] text-[#1a0a05] text-xs font-bold uppercase tracking-[0.14em] rounded-xs shadow-lg transition-all active:scale-98"
+                    >
+                      <span>{BRIDAL_HERITAGE_SLIDES[bridalSlide].btnPrimaryText}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+
+                    <Link
+                      to={BRIDAL_HERITAGE_SLIDES[bridalSlide].btnSecondaryLink}
+                      className="inline-flex items-center gap-2 px-6 py-3 border border-white/50 text-white hover:bg-white hover:text-[#1a0a05] text-xs font-semibold uppercase tracking-[0.14em] rounded-xs backdrop-blur-xs transition-all active:scale-98"
+                    >
+                      <span>{BRIDAL_HERITAGE_SLIDES[bridalSlide].btnSecondaryText}</span>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* 4 Feature Pillars Divider Row */}
+                <div className="pt-5 border-t border-white/15 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
+                  
+                  {/* Authentic Craftsmanship */}
+                  <div className="flex flex-col items-center gap-1.5 p-1">
+                    <Sparkles className="w-4 h-4 text-[#E0C588]" />
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-white leading-tight drop-shadow-xs">
+                      Authentic Craftsmanship
+                    </span>
+                  </div>
+
+                  {/* Heritage Designs */}
+                  <div className="flex flex-col items-center gap-1.5 p-1 border-l border-white/15">
+                    <Gem className="w-4 h-4 text-[#E0C588]" />
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-white leading-tight drop-shadow-xs">
+                      Heritage Designs
+                    </span>
+                  </div>
+
+                  {/* Trusted by Generations */}
+                  <div className="flex flex-col items-center gap-1.5 p-1 sm:border-l border-white/15">
+                    <Users className="w-4 h-4 text-[#E0C588]" />
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-white leading-tight drop-shadow-xs">
+                      Trusted by Generations
+                    </span>
+                  </div>
+
+                  {/* Certified Materials */}
+                  <div className="flex flex-col items-center gap-1.5 p-1 border-l border-white/15">
+                    <ShieldCheck className="w-4 h-4 text-[#E0C588]" />
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-white leading-tight drop-shadow-xs">
+                      Certified Materials
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* Micro Footer Legend */}
+          <div className="mt-4 px-2 flex flex-col sm:flex-row items-center justify-between gap-2 text-[9.5px] uppercase tracking-[0.25em] text-[#9C9488]">
+            <span>TRADITION &nbsp;|&nbsp; ARTISTRY &nbsp;|&nbsp; ELEGANCE &nbsp;|&nbsp; ALWAYS YOURS</span>
+            <span className="font-semibold text-[#8F6B38]">MORE THAN JEWELLERY — A LEGACY</span>
+          </div>
+
         </div>
       </section>
 
-      {/* ── 6. IN STOCK / READY TO SHIP STRIP (Spec §2.6) ──────────────── */}
-      <section className="py-6 bg-[#5C1A2E]">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-8">
-            <div className="flex items-center gap-3 text-white">
-              <div className="p-2 bg-white/15 rounded-full">
-                <Truck className="w-5 h-5 text-[#D4B884]" />
-              </div>
-              <div>
-                <p className="font-serif text-lg sm:text-xl font-medium text-white">Ready to Ship — In Stock Pieces</p>
-                <p className="text-[11px] text-white/70 font-light">Dispatched within 48 hours · Insured transit included · Pan-India delivery</p>
-              </div>
-            </div>
-            <Link
-              to="/shop?stock=IN_STOCK"
-              className="shrink-0 btn btn-sm inline-flex items-center gap-2 bg-white text-[#5C1A2E] hover:bg-[#FAF6F0] border-none font-semibold uppercase tracking-[0.12em]"
-            >
-              <CheckCircle className="w-3.5 h-3.5" />
-              Shop In-Stock Pieces
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 7. MADE TO ORDER EXPLAINER (Spec §2.7) ──────────────────────── */}
-      <section className="py-16 bg-white border-b border-[#E5E2DA]">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
-
-            <div className="lg:col-span-5 space-y-5">
-              <div className="flex items-center gap-3">
-                <span className="w-8 h-[1px] bg-[#D1CCC0]" />
-                <Clock className="w-4 h-4 text-[#B8935A]" />
-              </div>
-              <span className="text-[10.5px] uppercase tracking-[0.22em] font-bold text-[#5C1A2E]">Made to Order</span>
-              <h2 className="font-serif text-2xl sm:text-3xl text-[#2B2320] font-medium leading-snug">
-                Commission your piece.<br />
-                <span className="italic font-normal">We craft it just for you.</span>
-              </h2>
-              <p className="text-xs sm:text-sm text-[#4A5568] leading-relaxed">
-                Many of our finest heirlooms are made to order — meaning a master karigar in Jaipur begins work on your piece after confirmation. This ensures each jewel is freshly crafted, never sitting in a dusty stockroom.
-              </p>
-              <ul className="space-y-2.5 text-xs text-[#4A5568]">
-                {[
-                  'Typical lead time: 14–21 working days',
-                  'Real-time WhatsApp updates through production',
-                  'Full price transparency — no hidden charges',
-                  'Free revision on sizing after delivery',
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2">
-                    <CheckCircle className="w-3.5 h-3.5 text-[#B8935A] mt-0.5 shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link to="/shop?stock=MADE_TO_ORDER" className="btn btn-outline btn-sm inline-flex items-center gap-2">
-                <Clock className="w-3.5 h-3.5" />
-                Browse MTO Pieces
-              </Link>
-            </div>
-
-            {/* Image pair */}
-            <div className="lg:col-span-7 grid grid-cols-2 gap-4">
-              <div className="aspect-[4/5] overflow-hidden rounded-xs">
-                <img
-                  src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80"
-                  alt="Master karigar crafting"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
-                />
-              </div>
-              <div className="aspect-[4/5] overflow-hidden rounded-xs mt-6">
-                <img
-                  src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=600&q=80"
-                  alt="Fine jewellery setting"
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 8. BRIDAL / OCCASION EDIT (Spec §2.8) ──────────────────────── */}
-      <section className="py-0 bg-[#2B2320] relative overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[440px]">
-          <div className="relative aspect-[4/3] lg:aspect-auto">
+      {/* ── 7. MADE TO ORDER EXPLAINER ─────────────────────────────────────── */}
+      <section className="relative bg-[#FAF6F0] border-b border-[#E8DFD3] overflow-hidden">
+        
+        {/* ── MOBILE VIEW (< md) matching uploaded mobile design ── */}
+        <div className="block md:hidden bg-[#FAF6F0]">
+          
+          {/* 1. Full-width Seamless Image Container with Content INSIDE it */}
+          <div className="relative w-full overflow-hidden bg-[#FAF6F0]">
             <img
-              src="https://images.unsplash.com/photo-1630019852942-f89202989a59?auto=format&fit=crop&w=900&q=85"
-              alt="Bridal jewellery"
-              className="w-full h-full object-cover opacity-85"
-              loading="lazy"
+              src="/banner/madetoorder_mobile.jpeg"
+              alt="Made to Order At House of Virasat"
+              className="w-full h-auto object-cover block"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#2B2320]/60 lg:to-[#2B2320]/90" />
-          </div>
 
-          <div className="flex flex-col justify-center p-8 sm:p-12 lg:p-16 text-white">
-            <span className="text-[10px] uppercase tracking-[0.22em] font-bold text-[#D4B884] mb-2">Bridal & Occasion Edit</span>
-            <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-medium leading-snug mb-4">
-              For the moments that become memories.
-            </h2>
-            <p className="text-xs sm:text-sm text-white/70 leading-relaxed max-w-md mb-6">
-              From intimate nikahs to grand Rajput wedding processions — our bridal edits are designed for the woman who wants to be remembered. Each bridal suite is available for bespoke customisation.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link to="/shop?category=bridal" className="btn btn-sm inline-flex items-center gap-2 bg-[#B8935A] hover:bg-[#96773E] text-white border-none uppercase tracking-[0.12em] font-semibold">
-                <Heart className="w-3.5 h-3.5" />
-                Explore Bridal Edit
-              </Link>
-              <Link to="/bespoke" className="btn btn-sm inline-flex items-center gap-2 bg-transparent text-white border border-white/30 hover:border-white/70 uppercase tracking-[0.12em] font-semibold">
-                Commission Bespoke
-              </Link>
+            {/* Header Text Block positioned INSIDE the upper empty area of the image */}
+            <div className="absolute top-0 left-0 right-0 p-5 pt-6 space-y-2 max-w-[92%]">
+              <div className="flex items-center gap-2">
+                <span className="w-5 h-[1.5px] bg-[#946E3A]" />
+                <span className="text-[9.5px] font-bold tracking-[0.22em] uppercase text-[#946E3A]">
+                  Made to Order
+                </span>
+              </div>
+
+              <h2 className="font-serif text-[21px] sm:text-[24px] leading-[1.14] text-[#241B16] font-normal tracking-tight">
+                Commission your piece.<br />
+                <span className="italic text-[#4A3222] font-serif">We craft it just for you.</span>
+              </h2>
+
+              <p className="text-[11.5px] text-[#55493F] leading-snug font-light max-w-[250px]">
+                Collaborate with our Jaipur artisans to bring your vision to life, step by step.
+              </p>
+
+              <div className="pt-0.5">
+                <Link
+                  to="/shop?stock=MADE_TO_ORDER"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#845E35] hover:bg-[#6E4B27] text-white font-sans text-[10.5px] uppercase tracking-[0.14em] font-semibold transition-all duration-300 shadow-sm rounded-xs"
+                >
+                  <span>Browse MTO Pieces</span>
+                  <ArrowRight className="w-3 h-3 text-[#E6C697]" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Middle Stone Overlay: YOUR VISION, OUR CRAFTSMANSHIP */}
+            <div className="absolute left-[3%] top-[45%] -translate-y-1/2 bg-black/55 backdrop-blur-md px-2.5 py-1.5 rounded-xs border border-white/30 shadow-md">
+              <p className="text-[8px] uppercase tracking-[0.22em] font-serif font-medium" style={{ color: '#ffffff' }}>
+                YOUR VISION,
+              </p>
+              <p className="text-[7px] uppercase tracking-[0.18em] font-sans font-semibold text-[#E6C697]">
+                OUR CRAFTSMANSHIP
+              </p>
+            </div>
+
+            {/* Top Right Photo: SKILLED HANDS / TIMELESS CREATIONS */}
+            <div className="absolute right-2.5 top-[45%] -translate-y-1/2 text-center bg-black/60 backdrop-blur-md px-2 py-1.5 rounded-xs border border-white/30 shadow-md">
+              <p className="text-[7.5px] uppercase tracking-[0.2em] font-serif font-medium" style={{ color: '#ffffff' }}>
+                SKILLED HANDS
+              </p>
+              <p className="text-[6.5px] uppercase tracking-[0.16em] font-sans font-semibold text-[#E6C697] mt-0.5">
+                TIMELESS CREATIONS
+              </p>
+            </div>
+
+            {/* Bottom Right Photo: FROM SKETCH / TO HEIRLOOM */}
+            <div className="absolute right-2.5 bottom-[17%] text-left bg-black/60 backdrop-blur-md px-2 py-1.5 rounded-xs border border-white/30 shadow-md">
+              <p className="text-[7.5px] uppercase tracking-[0.2em] font-serif font-medium" style={{ color: '#ffffff' }}>
+                FROM SKETCH
+              </p>
+              <p className="text-[6.5px] uppercase tracking-[0.16em] font-sans font-semibold text-[#E6C697] mt-0.5">
+                TO HEIRLOOM
+              </p>
             </div>
           </div>
+
+          {/* Bottom Content Area */}
+          <div className="px-4.5 pb-6 space-y-4">
+            {/* 2. Cursive Heading */}
+            <div className="text-center pt-2 pb-0.5">
+              <h3 className="font-serif italic text-2xl text-[#241B16] font-normal">
+                Crafted with Purpose
+              </h3>
+            </div>
+
+            {/* 3. 2x2 Feature Cards Grid */}
+            <div className="grid grid-cols-2 gap-2.5">
+              {/* Card 1: Lead Time */}
+              <div className="p-3 bg-[#FAF7F2] border border-[#EBE3D7] rounded-xl flex items-center gap-2.5 shadow-2xs">
+                <div className="w-8 h-8 rounded-full bg-[#EFE8DC] text-[#845E35] flex items-center justify-center shrink-0">
+                  <Clock className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-[#706256] leading-tight font-medium">Typical lead time</p>
+                  <p className="text-[11px] font-semibold text-[#241B16] mt-0.5">14-21 working days</p>
+                </div>
+              </div>
+
+              {/* Card 2: WhatsApp updates */}
+              <div className="p-3 bg-[#FAF7F2] border border-[#EBE3D7] rounded-xl flex items-center gap-2.5 shadow-2xs">
+                <div className="w-8 h-8 rounded-full bg-[#EFE8DC] text-[#845E35] flex items-center justify-center shrink-0">
+                  <Phone className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-[#706256] leading-tight font-medium">Real-time WhatsApp</p>
+                  <p className="text-[10.5px] font-semibold text-[#241B16] mt-0.5 leading-tight">updates through production</p>
+                </div>
+              </div>
+
+              {/* Card 3: Full price transparency */}
+              <div className="p-3 bg-[#FAF7F2] border border-[#EBE3D7] rounded-xl flex items-center gap-2.5 shadow-2xs">
+                <div className="w-8 h-8 rounded-full bg-[#EFE8DC] text-[#845E35] flex items-center justify-center shrink-0">
+                  <Tag className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-[#706256] leading-tight font-medium">Full price transparency</p>
+                  <p className="text-[11px] font-semibold text-[#241B16] mt-0.5">- no hidden charges</p>
+                </div>
+              </div>
+
+              {/* Card 4: Free revision on sizing */}
+              <div className="p-3 bg-[#FAF7F2] border border-[#EBE3D7] rounded-xl flex items-center gap-2.5 shadow-2xs">
+                <div className="w-8 h-8 rounded-full bg-[#EFE8DC] text-[#845E35] flex items-center justify-center shrink-0">
+                  <RotateCcw className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-[#706256] leading-tight font-medium">Free revision on sizing</p>
+                  <p className="text-[11px] font-semibold text-[#241B16] mt-0.5">after delivery</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 4. Mobile Bottom Trust Strip */}
+            <div className="pt-3 border-t border-[#E8DFD3] grid grid-cols-2 gap-3 items-center">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-[#EDE4D8] text-[#845E35] flex items-center justify-center shrink-0">
+                  <Hammer className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-serif text-[11px] font-semibold text-[#241B16] leading-tight">Crafted in Jaipur</p>
+                  <p className="text-[9.5px] text-[#706256]">by Master Artisans</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-[#EDE4D8] text-[#845E35] flex items-center justify-center shrink-0">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="font-serif text-[11px] font-semibold text-[#241B16] leading-tight">Heirlooms for Generations</p>
+                  <p className="text-[9.5px] text-[#706256]">A Timeless Legacy</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* ── DESKTOP & TABLET VIEW (>= md) ── */}
+        <div className="hidden md:flex relative max-w-[1500px] mx-auto min-h-[580px] lg:min-h-[640px] flex-col justify-between">
+          
+          {/* Background Image Layer */}
+          <div className="absolute inset-0 pointer-events-none">
+            <img
+              src="/banner/madetoorder.jpeg"
+              alt="Made to Order At House of Virasat"
+              className="w-full h-full object-cover object-right lg:object-center"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#FAF6F0] via-[#FAF6F0]/85 md:via-[#FAF6F0]/65 to-transparent w-full md:w-[60%] lg:w-[48%]" />
+          </div>
+
+          {/* Top Bar / Header Brand Stamp */}
+          <div className="relative z-10 px-6 sm:px-10 lg:px-14 pt-8 sm:pt-10 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="w-7 h-[1.5px] bg-[#946E3A]" />
+              <span className="text-[11px] sm:text-xs font-semibold tracking-[0.25em] uppercase text-[#946E3A]">
+                Made to Order
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 text-[10px] sm:text-[11px] uppercase tracking-[0.22em] text-[#8C7A6B]">
+              <svg className="w-4 h-4 text-[#946E3A]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C11.5 5 9 8 5 9c4 1 6.5 4 7 7 0.5-3 3-6 7-7-4-1-6.5-4-7-7z" opacity="0.6"/>
+                <path d="M12 7c-1 3-3.5 5.5-6.5 6 3 0.5 5.5 3 6.5 6 1-3 3.5-5.5 6.5-6-3-0.5-5.5-3-6.5-6z"/>
+              </svg>
+              <span>Tradition &nbsp;|&nbsp; Artistry &nbsp;|&nbsp; Always Yours</span>
+            </div>
+          </div>
+
+          {/* Content Body Grid */}
+          <div className="relative z-10 px-6 sm:px-10 lg:px-14 py-8 sm:py-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            {/* Left Column: Copy & Value Props */}
+            <div className="lg:col-span-6 xl:col-span-5 space-y-6 max-w-xl">
+              <div>
+                <h2 className="font-serif text-3xl sm:text-4xl lg:text-[44px] text-[#241B16] font-normal leading-[1.16] tracking-tight">
+                  Commission your piece.<br />
+                  <span className="italic text-[#4A3222] font-serif">We craft it just for you.</span>
+                </h2>
+                <p className="mt-4 text-xs sm:text-[13.5px] text-[#55493F] leading-relaxed font-light">
+                  Many of our finest heirlooms are made to order — meaning a master karigar in Jaipur begins work on your piece after confirmation. This ensures each jewel is freshly crafted, never sitting in a dusty stockroom.
+                </p>
+              </div>
+
+              {/* 4 Feature Items */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 pt-1">
+                {/* 1. Lead Time */}
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full border border-[#D8C7B5] bg-white/70 backdrop-blur-xs flex items-center justify-center shrink-0 text-[#946E3A] shadow-2xs">
+                    <Calendar className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-[#706256] leading-tight">Typical lead time:</p>
+                    <p className="text-xs font-semibold text-[#241B16]">14 – 21 working days</p>
+                  </div>
+                </div>
+
+                {/* 2. WhatsApp Updates */}
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full border border-[#D8C7B5] bg-white/70 backdrop-blur-xs flex items-center justify-center shrink-0 text-[#946E3A] shadow-2xs">
+                    <MessageCircle className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-[#241B16] leading-tight">Real-time WhatsApp updates</p>
+                    <p className="text-[11px] text-[#706256]">through production</p>
+                  </div>
+                </div>
+
+                {/* 3. Full price transparency */}
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full border border-[#D8C7B5] bg-white/70 backdrop-blur-xs flex items-center justify-center shrink-0 text-[#946E3A] shadow-2xs">
+                    <Tag className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-[#241B16] leading-tight">Full price transparency</p>
+                    <p className="text-[11px] text-[#706256]">— no hidden charges</p>
+                  </div>
+                </div>
+
+                {/* 4. Free revision on sizing */}
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full border border-[#D8C7B5] bg-white/70 backdrop-blur-xs flex items-center justify-center shrink-0 text-[#946E3A] shadow-2xs">
+                    <RotateCcw className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-[#241B16] leading-tight">Free revision on sizing</p>
+                    <p className="text-[11px] text-[#706256]">after delivery</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA Button & Cursive Accent */}
+              <div className="pt-3 flex flex-wrap items-center gap-6 sm:gap-8">
+                <Link
+                  to="/shop?stock=MADE_TO_ORDER"
+                  className="inline-flex items-center gap-2.5 px-6 sm:px-7 py-3.5 bg-[#845E35] hover:bg-[#6E4B27] text-white font-sans text-xs uppercase tracking-[0.18em] font-semibold transition-all duration-300 shadow-sm rounded-xs group"
+                >
+                  <span>Browse MTO Pieces</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-[#E6C697] group-hover:translate-x-1 transition-transform" />
+                </Link>
+
+                <span className="font-serif italic text-2xl sm:text-3xl text-[#A68252] select-none">
+                  Crafted with Purpose
+                </span>
+              </div>
+            </div>
+
+            {/* Right Column Micro-Overlays (Desktop) */}
+            <div className="hidden lg:block lg:col-span-6 xl:col-span-7 h-[420px] relative pointer-events-none">
+              {/* Middle Stone Overlay: YOUR VISION / OUR CRAFTSMANSHIP */}
+              <div className="absolute left-[33%] xl:left-[35%] top-[48%] -translate-y-1/2 text-right bg-black/45 backdrop-blur-md px-4 py-2 rounded-xs border border-white/30 shadow-xl">
+                <p className="text-[10.5px] uppercase tracking-[0.28em] font-serif font-medium drop-shadow-sm" style={{ color: '#ffffff' }}>
+                  YOUR VISION
+                </p>
+                <div className="w-12 h-[1px] bg-gradient-to-l from-[#E6C697] to-transparent my-1 ml-auto" />
+                <p className="text-[9.5px] uppercase tracking-[0.24em] font-sans font-semibold text-[#E6C697] drop-shadow-xs">
+                  OUR CRAFTSMANSHIP
+                </p>
+              </div>
+
+              {/* Top Right Photo: SKILLED HANDS / TIMELESS CREATIONS */}
+              <div className="absolute right-5 xl:right-7 top-[22%] text-center bg-black/55 backdrop-blur-md px-3.5 py-2 rounded-xs border border-white/30 shadow-xl">
+                <p className="text-[10px] uppercase tracking-[0.26em] font-serif font-medium drop-shadow-sm" style={{ color: '#ffffff' }}>
+                  SKILLED HANDS
+                </p>
+                <p className="text-[8.5px] uppercase tracking-[0.2em] font-sans font-semibold text-[#E6C697] mt-0.5 drop-shadow-xs">
+                  TIMELESS CREATIONS
+                </p>
+              </div>
+
+              {/* Bottom Right Photo: FROM SKETCH / TO HEIRLOOM */}
+              <div className="absolute right-[14%] xl:right-[16%] bottom-[9%] text-left bg-black/55 backdrop-blur-md px-3.5 py-2 rounded-xs border border-white/30 shadow-xl">
+                <p className="text-[10px] uppercase tracking-[0.26em] font-serif font-medium drop-shadow-sm" style={{ color: '#ffffff' }}>
+                  FROM SKETCH
+                </p>
+                <p className="text-[8.5px] uppercase tracking-[0.2em] font-sans font-semibold text-[#E6C697] mt-0.5 drop-shadow-xs">
+                  TO HEIRLOOM
+                </p>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Bottom Trust Strip */}
+          <div className="relative z-10 mt-auto border-t border-[#E8DFD3] bg-[#F7F2EB]/95 backdrop-blur-xs py-5 px-6 sm:px-10 lg:px-14">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-center max-w-4xl">
+              
+              {/* 1. Personalised Experience */}
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-full bg-[#EDE4D8] text-[#845E35] flex items-center justify-center shrink-0">
+                  <Gem className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-serif text-sm font-semibold text-[#241B16] leading-snug">
+                    A Personalised Experience
+                  </h4>
+                  <p className="text-[11px] text-[#706256] leading-tight">
+                    Designed Around Your Story
+                  </p>
+                </div>
+              </div>
+
+              {/* 2. Crafted in Jaipur */}
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-full bg-[#EDE4D8] text-[#845E35] flex items-center justify-center shrink-0">
+                  <Hammer className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-serif text-sm font-semibold text-[#241B16] leading-snug">
+                    Crafted in Jaipur
+                  </h4>
+                  <p className="text-[11px] text-[#706256] leading-tight">
+                    By Master Artisans
+                  </p>
+                </div>
+              </div>
+
+              {/* 3. Heirlooms for Generations */}
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-full bg-[#EDE4D8] text-[#845E35] flex items-center justify-center shrink-0">
+                  <Award className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-serif text-sm font-semibold text-[#241B16] leading-snug">
+                    Heirlooms for Generations
+                  </h4>
+                  <p className="text-[11px] text-[#706256] leading-tight">
+                    More Than Jewellery, A Legacy
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Subtle Palace Artwork Silhouette in Bottom Right */}
+            <div className="absolute right-4 bottom-0 hidden lg:block opacity-35 pointer-events-none">
+              <svg className="w-48 h-16 text-[#A68252]" viewBox="0 0 200 60" fill="currentColor">
+                <path d="M10 60V40l10-8 10 8v20h-20zm30 0V32l15-12 15 12v28h-30zm40 0V20l20-16 20 16v40h-40zm50 0V32l15-12 15 12v28h-30zm40 0V40l10-8 10 8v20h-20z" />
+                <circle cx="20" cy="30" r="3" />
+                <circle cx="55" cy="18" r="4" />
+                <circle cx="100" cy="3" r="5" />
+                <circle cx="145" cy="18" r="4" />
+                <circle cx="180" cy="30" r="3" />
+              </svg>
+            </div>
+
+          </div>
+
         </div>
       </section>
+
 
       {/* ── 9. WHY HOUSE OF VIRASAT (Spec §2.9) ─────────────────────────── */}
       <section className="py-16 bg-[#FAF6F0]">
@@ -849,17 +1494,17 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             {/* Portrait */}
             <div className="lg:col-span-4">
-              <div className="relative aspect-[3/4] max-w-[340px] mx-auto lg:max-w-none overflow-hidden rounded-xs">
+              <div className="relative aspect-[4/4.5] max-w-[300px] h-[280px] sm:h-[320px] mx-auto lg:max-w-none overflow-hidden rounded-md shadow-sm">
                 <img
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80"
+                  src="/founderimg.jpeg"
                   alt="Founder — House of Virasat"
-                  className="w-full h-full object-cover object-top"
+                  className="w-full h-full object-cover object-center"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                 <div className="absolute bottom-4 left-4 text-white">
-                  <p className="font-serif text-base font-medium">Vikram Virasat</p>
-                  <p className="text-[10px] text-white/70 uppercase tracking-wider">Founder & Chief Karigar</p>
+                  <p className="font-serif text-base font-medium" style={{ color: '#ffffff' }}>Riya Sikaria</p>
+                  <p className="text-[10px] text-white/80 uppercase tracking-wider" style={{ color: '#ffffff' }}>Founder</p>
                 </div>
               </div>
             </div>
@@ -885,8 +1530,8 @@ export default function Home() {
       {/* ── 12. CLIENT TRUST / TESTIMONIALS (Spec §2.12) ────────────────── */}
       <section className="py-16 bg-[#2B2320]">
         <div className="max-w-[900px] mx-auto px-4 sm:px-8 text-center">
-          <span className="text-[11px] uppercase tracking-[0.22em] font-semibold text-[#B8935A]">Client Stories</span>
-          <h2 className="font-serif text-2xl sm:text-3xl text-white font-medium mt-1 mb-10">
+          <span className="text-[11px] uppercase tracking-[0.22em] font-semibold text-white/90" style={{ color: '#ffffff' }}>Client Stories</span>
+          <h2 className="font-serif text-2xl sm:text-3xl font-medium mt-1 mb-10 text-white" style={{ color: '#ffffff' }}>
             What our patrons say
           </h2>
 
@@ -899,16 +1544,17 @@ export default function Home() {
             </div>
             <blockquote
               key={activeTestimonial}
-              className="font-serif text-lg sm:text-xl text-white/90 italic leading-relaxed max-w-2xl mx-auto animate-[fadeIn_0.4s_ease] text-balance"
+              className="font-serif text-lg sm:text-xl text-white italic leading-relaxed max-w-2xl mx-auto animate-[fadeIn_0.4s_ease] text-balance"
+              style={{ color: '#ffffff' }}
             >
               “{TESTIMONIALS[activeTestimonial].quote}”
             </blockquote>
-            <div className="mt-6 text-sm text-white/60">
-              <span className="font-semibold text-white/80">{TESTIMONIALS[activeTestimonial].name}</span>
-              <span className="mx-2">·</span>
-              <span>{TESTIMONIALS[activeTestimonial].location}</span>
-              <span className="mx-2">·</span>
-              <span className="text-[#B8935A]">{TESTIMONIALS[activeTestimonial].occasion}</span>
+            <div className="mt-6 text-sm text-white/90" style={{ color: '#ffffff' }}>
+              <span className="font-semibold text-white" style={{ color: '#ffffff' }}>{TESTIMONIALS[activeTestimonial].name}</span>
+              <span className="mx-2 text-white/60">·</span>
+              <span className="text-white/80">{TESTIMONIALS[activeTestimonial].location}</span>
+              <span className="mx-2 text-white/60">·</span>
+              <span className="text-[#E0C088] font-medium">{TESTIMONIALS[activeTestimonial].occasion}</span>
             </div>
           </div>
 
@@ -920,8 +1566,8 @@ export default function Home() {
                 type="button"
                 onClick={() => setActiveTestimonial(idx)}
                 className={`rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8935A] ${activeTestimonial === idx
-                    ? 'w-7 h-1.5 bg-[#B8935A]'
-                    : 'w-1.5 h-1.5 bg-white/30 hover:bg-white/60'
+                  ? 'w-7 h-1.5 bg-[#B8935A]'
+                  : 'w-1.5 h-1.5 bg-white/30 hover:bg-white/60'
                   }`}
                 aria-label={`Testimonial ${idx + 1}`}
               />
@@ -933,9 +1579,8 @@ export default function Home() {
       {/* ── 13. SERVICE STRIP (Spec §2.13) ──────────────────────────────── */}
       <section className="py-8 bg-white border-y border-[#E5E2DA]">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
             {[
-              { icon: <Truck className="w-5 h-5" aria-hidden="true" />, label: 'Free Insured Shipping', sub: 'On all orders above ₹5,000' },
               { icon: <ShieldCheck className="w-5 h-5" aria-hidden="true" />, label: 'Secure Payment', sub: 'SSL encrypted · Razorpay trusted' },
               { icon: <Award className="w-5 h-5" aria-hidden="true" />, label: 'BIS Hallmark Purity', sub: '100% certified authentic' },
               { icon: <Palette className="w-5 h-5" aria-hidden="true" />, label: 'Customisation', sub: 'Bespoke orders via WhatsApp' },
