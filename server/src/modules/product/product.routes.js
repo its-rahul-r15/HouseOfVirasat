@@ -4,7 +4,7 @@ import { authenticate } from '../../middlewares/auth.middleware.js';
 import { requirePermission } from '../../middlewares/rbac.middleware.js';
 import { validate } from '../../middlewares/validate.middleware.js';
 import { publicApiLimiter, uploadLimiter } from '../../middlewares/rateLimit.middleware.js';
-import { uploadProductImages } from '../../middlewares/upload.middleware.js';
+import { uploadProductImages, uploadProductVideo } from '../../middlewares/upload.middleware.js';
 import { createProductSchema, updateProductSchema, listProductsSchema } from './product.schema.js';
 
 const router = express.Router();
@@ -53,5 +53,16 @@ router.post(
 );
 
 router.delete('/:id/images', requirePermission('manageProducts'), productController.removeImage);
+
+// Video upload/remove routes
+router.post(
+  '/:id/video',
+  requirePermission('manageProducts'),
+  uploadLimiter,
+  uploadProductVideo.single('video'),
+  productController.uploadVideo,
+);
+
+router.delete('/:id/video', requirePermission('manageProducts'), productController.removeVideo);
 
 export default router;

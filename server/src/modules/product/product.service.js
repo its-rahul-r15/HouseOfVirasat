@@ -3,7 +3,7 @@ import Product from './product.model.js';
 import Category from '../category/category.model.js';
 import Collection from '../category/collection.model.js';
 import { ApiError } from '../../lib/ApiError.js';
-import { processUpload, deleteFile, UPLOAD_SUBDIRS } from '../../services/image.service.js';
+import { processUpload, processVideoUpload, deleteFile, UPLOAD_SUBDIRS } from '../../services/image.service.js';
 import { generateSitemap } from '../../services/sitemap.service.js';
 import { PRODUCT_STATUS } from '../../config/constants.js';
 
@@ -308,5 +308,41 @@ export async function updateStockQuantity(id, quantity) {
 
   product.stockQuantity = quantity;
   await product.save(); // triggers pre-save hook for status transition
+  return product;
+}
+
+/**
+ * Upload / replace the product video.
+ * Old video is deleted from R2 before new one is stored.
+ * The `video` field on Product stores the public R2 URL.
+ */
+export async function addProductVideo(id, file) {
+  const product = await Product.findById(id);
+  if (!product) throw ApiError.notFound('Product not found');
+
+  // Delete existing video from R2 if present
+  if (product.video) {
+    deleteFile(product.video).catch(() => {});
+  }
+
+  const { url } = await processVideoUpload(file.buffer, file.mimetype, UPLOAD_SUBDIRS.PRODUCTS);
+  product.video = url;
+  await product.save();
+  return product;
+}
+
+/**
+ * Remove the product video — deletes from R2 and clears the field.
+ */
+export async function removeProductVideo(id) {
+  const product = await Product.findById(id);
+  if (!product) throw ApiError.notFound('Product not found');
+
+  if (product.video) {
+    deleteFile(product.video).catch(() => {});
+    product.video = undefined;
+    await product.save();
+  }
+
   return product;
 }

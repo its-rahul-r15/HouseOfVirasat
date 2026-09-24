@@ -59,6 +59,31 @@ export async function processUpload(fileBuffer, subDir = UPLOAD_SUBDIRS.PRODUCTS
 }
 
 /**
+ * Uploads a product video buffer directly to R2 (no transcoding).
+ * Videos are stored as-is — MP4/WebM/MOV preserved with original MIME type.
+ *
+ * @param {Buffer} fileBuffer  - Raw video buffer from multer memoryStorage (file.buffer)
+ * @param {string} mimeType    - Original MIME type e.g. "video/mp4"
+ * @param {string} subDir      - One of UPLOAD_SUBDIRS values (default: PRODUCTS)
+ * @returns {Promise<{path, url}>}
+ */
+export async function processVideoUpload(fileBuffer, mimeType, subDir = UPLOAD_SUBDIRS.PRODUCTS) {
+  const extMap = {
+    'video/mp4': 'mp4',
+    'video/webm': 'webm',
+    'video/quicktime': 'mov',
+  };
+  const ext = extMap[mimeType] || 'mp4';
+  const dateSubpath = getDateSubpath(subDir);
+  const filename = `vid-${nanoid()}-${Date.now()}.${ext}`;
+  const r2Key = `${dateSubpath}/${filename}`;
+
+  const url = await uploadToR2(fileBuffer, r2Key, mimeType);
+  return { path: r2Key, url };
+}
+
+
+/**
  * Processes a thumbnail upload:
  *  1. Crops to 400×400 cover
  *  2. Uploads to R2 with `thumb-` prefix

@@ -4,14 +4,25 @@ import logger from '../lib/logger.js';
 
 // ─── R2 S3-compatible client ───────────────────────────────────────────────
 // R2 uses AWS S3 API — endpoint is https://<accountId>.r2.cloudflarestorage.com
-const r2Client = new S3Client({
-  region: 'auto',
-  endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: env.R2_ACCESS_KEY_ID,
-    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
-  },
-});
+function getR2Client() {
+  const accountId = env.R2_ACCOUNT_ID;
+  const accessKeyId = env.R2_ACCESS_KEY_ID;
+  const secretAccessKey = env.R2_SECRET_ACCESS_KEY;
+
+  return new S3Client({
+    region: 'auto',
+    endpoint: accountId ? `https://${accountId}.r2.cloudflarestorage.com` : undefined,
+    credentials:
+      accessKeyId && secretAccessKey
+        ? {
+            accessKeyId,
+            secretAccessKey,
+          }
+        : undefined,
+  });
+}
+
+const r2Client = getR2Client();
 
 /**
  * Upload a buffer to Cloudflare R2.
@@ -22,20 +33,31 @@ const r2Client = new S3Client({
  * @returns {Promise<string>}   - Public CDN URL of the uploaded object
  */
 export async function uploadToR2(buffer, key, contentType = 'image/webp') {
-  await r2Client.send(
-    new PutObjectCommand({
-      Bucket: env.R2_BUCKET_NAME,
-      Key: key,
-      Body: buffer,
-      ContentType: contentType,
-      // Content-addressed filenames (nanoid + timestamp) never change → safe to cache forever
-      CacheControl: 'public, max-age=31536000, immutable',
-    }),
-  );
+  if (!env.R2_ACCOUNT_ID || !env.R2_ACCESS_KEY_ID || !env.R2_SECRET_ACCESS_KEY || !env.R2_BUCKET_NAME) {
+    logger.error('R2: Missing required R2 environment variables (R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME)');
+    throw new Error('Cloudflare R2 storage is not configured on this server. Please check your environment variables.');
+  }
 
-  const url = `${env.R2_PUBLIC_URL}/${key}`;
-  logger.info(`R2: uploaded ${key}`);
-  return url;
+  try {
+    await r2Client.send(
+      new PutObjectCommand({
+        Bucket: env.R2_BUCKET_NAME,
+        Key: key,
+        Body: buffer,
+        ContentType: contentType,
+        // Content-addressed filenames (nanoid + timestamp) never change → safe to cache forever
+        CacheControl: 'public, max-age=31536000, immutable',
+      }),
+    );
+
+    const publicBase = (env.R2_PUBLIC_URL || '').replace(/\/$/, '');
+    const url = `${publicBase}/${key}`;
+    logger.info(`R2: successfully uploaded ${key} -> ${url}`);
+    return url;
+  } catch (err) {
+    logger.error(`R2 upload failed for key "${key}": ${err.message}`);
+    throw err;
+  }
 }
 
 /**

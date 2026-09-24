@@ -61,3 +61,14 @@ export const updateStock = catchAsync(async (req, res) => {
   const product = await productService.updateStockQuantity(req.params.id, req.body.quantity);
   ApiResponse.ok(res, product, 'Stock updated');
 });
+
+export const uploadVideo = catchAsync(async (req, res) => {
+  if (!req.file) throw new Error('No video file provided');
+  const product = await productService.addProductVideo(req.params.id, req.file);
+  ApiResponse.ok(res, product, 'Video uploaded');
+});
+
+export const removeVideo = catchAsync(async (req, res) => {
+  const product = await productService.removeProductVideo(req.params.id);
+  ApiResponse.ok(res, product, 'Video removed');
+});

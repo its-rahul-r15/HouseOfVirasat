@@ -3,11 +3,19 @@ import { ApiError } from '../lib/ApiError.js';
 
 // ─── Allowed MIME types ────────────────────────────────────────────────────
 const ALLOWED_IMAGE_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+const ALLOWED_VIDEO_MIMES = ['video/mp4', 'video/webm', 'video/quicktime'];
 
 // ─── File filter ───────────────────────────────────────────────────────────
 const imageFileFilter = (req, file, cb) => {
   if (!ALLOWED_IMAGE_MIMES.includes(file.mimetype)) {
     return cb(ApiError.badRequest('Only JPEG, PNG, WebP, or AVIF images are allowed'));
+  }
+  cb(null, true);
+};
+
+const videoFileFilter = (req, file, cb) => {
+  if (!ALLOWED_VIDEO_MIMES.includes(file.mimetype)) {
+    return cb(ApiError.badRequest('Only MP4, WebM, or MOV videos are allowed'));
   }
   cb(null, true);
 };
@@ -57,4 +65,11 @@ export const uploadSettingsImage = multer({
   storage: memStorage,
   fileFilter: imageFileFilter,
   limits: { fileSize: 2 * 1024 * 1024, files: 1 },
+});
+
+/** Product video — single file, MP4/WebM/MOV, max 100MB */
+export const uploadProductVideo = multer({
+  storage: memStorage,
+  fileFilter: videoFileFilter,
+  limits: { fileSize: 100 * 1024 * 1024, files: 1 },
 });
