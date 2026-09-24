@@ -2,13 +2,22 @@ import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client
 import { env } from '../config/env.js';
 import logger from '../lib/logger.js';
 
-// ─── R2 S3-compatible client ───────────────────────────────────────────────
-// R2 uses AWS S3 API — endpoint is https://<accountId>.r2.cloudflarestorage.com
-function getR2Client() {
-  const accountId = env.R2_ACCOUNT_ID;
-  const accessKeyId = env.R2_ACCESS_KEY_ID;
-  const secretAccessKey = env.R2_SECRET_ACCESS_KEY;
+const clean = (val) => (typeof val === 'string' ? val.trim().replace(/^["']|["']$/g, '') : val);
 
+const accountId = clean(env.R2_ACCOUNT_ID);
+const accessKeyId = clean(env.R2_ACCESS_KEY_ID);
+const secretAccessKey = clean(env.R2_SECRET_ACCESS_KEY);
+const bucketName = clean(env.R2_BUCKET_NAME);
+const publicUrl = clean(env.R2_PUBLIC_URL);
+
+if (accountId && accessKeyId && secretAccessKey && bucketName) {
+  const maskedKey = accessKeyId.length > 8 ? `${accessKeyId.slice(0, 4)}...${accessKeyId.slice(-4)}` : '****';
+  logger.info(`📦 R2 Storage initialized: bucket="${bucketName}", endpoint="https://${accountId}.r2.cloudflarestorage.com", keyId="${maskedKey}", secretLength=${secretAccessKey.length}`);
+} else {
+  logger.warn('⚠️ R2 Storage: Missing one or more R2 credentials in environment variables.');
+}
+
+function getR2Client() {
   return new S3Client({
     region: 'auto',
     endpoint: accountId ? `https://${accountId}.r2.cloudflarestorage.com` : undefined,
@@ -33,15 +42,15 @@ const r2Client = getR2Client();
  * @returns {Promise<string>}   - Public CDN URL of the uploaded object
  */
 export async function uploadToR2(buffer, key, contentType = 'image/webp') {
-  if (!env.R2_ACCOUNT_ID || !env.R2_ACCESS_KEY_ID || !env.R2_SECRET_ACCESS_KEY || !env.R2_BUCKET_NAME) {
-    logger.error('R2: Missing required R2 environment variables (R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME)');
+  if (!accountId || !accessKeyId || !secretAccessKey || !bucketName) {
+    logger.error(`R2: Missing credentials — accountId=${!!accountId}, accessKey=${!!accessKeyId}, secretKey=${!!secretAccessKey}, bucket=${!!bucketName}`);
     throw new Error('Cloudflare R2 storage is not configured on this server. Please check your environment variables.');
   }
 
   try {
     await r2Client.send(
       new PutObjectCommand({
-        Bucket: env.R2_BUCKET_NAME,
+        Bucket: bucketName,
         Key: key,
         Body: buffer,
         ContentType: contentType,
@@ -50,12 +59,12 @@ export async function uploadToR2(buffer, key, contentType = 'image/webp') {
       }),
     );
 
-    const publicBase = (env.R2_PUBLIC_URL || '').replace(/\/$/, '');
+    const publicBase = (publicUrl || '').replace(/\/$/, '');
     const url = `${publicBase}/${key}`;
     logger.info(`R2: successfully uploaded ${key} -> ${url}`);
     return url;
   } catch (err) {
-    logger.error(`R2 upload failed for key "${key}": ${err.message}`);
+    logger.error(`R2 upload failed for key "${key}": ${err.message} (bucket: ${bucketName}, keyId: ${accessKeyId ? accessKeyId.slice(0, 4) + '...' : 'none'})`);
     throw err;
   }
 }
@@ -82,7 +91,7 @@ export async function deleteFromR2(keyOrUrl) {
 
     await r2Client.send(
       new DeleteObjectCommand({
-        Bucket: env.R2_BUCKET_NAME,
+        Bucket: bucketName,
         Key: key,
       }),
     );
