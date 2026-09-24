@@ -274,8 +274,28 @@ export default function AdminProductEdit() {
         .then((res) => {
           const p = res?.data?.product || res?.data || res?.product || res;
           if (p) {
+            const heroUrl = typeof p.heroImage === 'object' && p.heroImage !== null
+              ? (p.heroImage.url || '')
+              : (typeof p.heroImage === 'string' ? p.heroImage : '');
+
             setFormData({
               ...p,
+              heroImage: {
+                url: heroUrl,
+                altText: (typeof p.heroImage === 'object' ? p.heroImage?.altText : '') || '',
+              },
+              stones: Array.isArray(p.stones) && p.stones.length > 0
+                ? p.stones
+                : [
+                    {
+                      type: 'POLKI',
+                      weight: '',
+                      count: 1,
+                      colour: '',
+                      clarity: '',
+                      certification: '',
+                    },
+                  ],
               category: typeof p.category === 'object' && p.category !== null ? p.category._id : (p.category || ''),
               mrp: p.mrp || '',
               sellingPrice: p.sellingPrice || '',
@@ -286,7 +306,9 @@ export default function AdminProductEdit() {
               supplierRef: p.supplierRef || '',
               batchRef: p.batchRef || '',
               tags: Array.isArray(p.tags) ? p.tags.join(', ') : (p.tags || ''),
-              galleryUrls: Array.isArray(p.gallery) ? p.gallery.map(g => g.url).join('\n') : '',
+              galleryUrls: Array.isArray(p.gallery)
+                ? p.gallery.map(g => (typeof g === 'object' ? g.url : g)).filter(Boolean).join('\n')
+                : (typeof p.gallery === 'string' ? p.gallery : ''),
               collection: Array.isArray(p.collection)
                 ? p.collection.map(c => typeof c === 'object' && c !== null ? (c._id || c.slug) : c)
                 : [p.collection || 'reet'],
@@ -330,7 +352,7 @@ export default function AdminProductEdit() {
     setFormData((prev) => ({
       ...prev,
       stones: [
-        ...prev.stones,
+        ...(prev.stones || []),
         {
           type: 'POLKI',
           weight: '',
@@ -346,14 +368,16 @@ export default function AdminProductEdit() {
   const handleRemoveStone = (idx) => {
     setFormData((prev) => ({
       ...prev,
-      stones: prev.stones.filter((_, i) => i !== idx),
+      stones: (prev.stones || []).filter((_, i) => i !== idx),
     }));
   };
 
   const handleStoneChange = (idx, field, value) => {
     setFormData((prev) => {
-      const updated = [...prev.stones];
-      updated[idx][field] = value;
+      const updated = [...(prev.stones || [])];
+      if (updated[idx]) {
+        updated[idx] = { ...updated[idx], [field]: value };
+      }
       return { ...prev, stones: updated };
     });
   };
@@ -654,7 +678,7 @@ export default function AdminProductEdit() {
                 className="w-full px-3 py-2 border border-[#D1CCC4] rounded-xs focus:outline-none focus:border-[#5C1A2E] bg-white"
               >
                 <option value="">Select Jewellery Category</option>
-                {categories.map((c) => (
+                {(categories || []).map((c) => (
                   <option key={c._id || c.slug} value={c._id || c.slug}>
                     {c.name}
                   </option>
@@ -682,7 +706,7 @@ export default function AdminProductEdit() {
                 className="w-full px-3 py-2 border border-[#D1CCC4] rounded-xs focus:outline-none focus:border-[#5C1A2E] bg-white"
               >
                 <option value="">Select Heritage Collection (Optional)</option>
-                {collections.map((col) => (
+                {(collections || []).map((col) => (
                   <option key={col._id || col.slug} value={col._id || col.slug}>
                     {col.name}
                   </option>
@@ -920,7 +944,7 @@ export default function AdminProductEdit() {
               </button>
             </div>
 
-            {formData.stones.map((stone, idx) => (
+            {(formData.stones || []).map((stone, idx) => (
               <div
                 key={idx}
                 className="p-3.5 bg-[#FAF6F0] border border-[#E8E2D9] rounded-xs grid grid-cols-1 sm:grid-cols-6 gap-3 items-center"
