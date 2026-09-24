@@ -101,7 +101,13 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Static file serving for uploads and sitemap
 const uploadsPath = path.resolve(env.UPLOADS_DIR);
-app.use('/uploads', express.static(uploadsPath));
+app.use('/uploads', express.static(uploadsPath, {
+  maxAge: '7d',
+  setHeaders: (res) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  },
+}));
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Comprehensive Health Check Endpoints (for Coolify, Docker, and Load Balancers)
