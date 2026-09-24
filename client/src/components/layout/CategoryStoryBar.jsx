@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 
 export default function CategoryStoryBar() {
   const storyItems = [
-    { id: 'rings', label: 'Rings', link: '/shop?category=rings', image: '/catagories/img2.jpeg' },
-    { id: 'earrings', label: 'Earrings', link: '/shop?category=earrings', image: '/catagories/img3.jpeg' },
+    { id: 'rings', label: 'Rings', link: '/shop?category=rings', image: '/catagories/img3.jpeg' },
+    { id: 'earrings', label: 'Earrings', link: '/shop?category=earrings', image: '/catagories/img5.jpeg' },
     { id: 'bangles', label: 'Bangles', link: '/shop?category=bangles', image: '/catagories/img4.jpeg' },
-    { id: 'bridal', label: 'Bridal', link: '/shop?category=bridal', image: '/catagories/img5.jpeg' },
+    { id: 'necklaces', label: 'Necklaces', link: '/shop?category=necklaces', image: '/catagories/img2.jpeg' },
   ];
 
   return (

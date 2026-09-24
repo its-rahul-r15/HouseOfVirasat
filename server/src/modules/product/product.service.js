@@ -56,11 +56,11 @@ async function resolveCollectionIds(collectionInput) {
 }
 
 export async function listProducts({ page = 1, limit = 50, category, collection, metalType, priceMode, priceMin, priceMax, availabilityStatus, sort = 'newest', search }) {
-  const filter = {};
+  const andClauses = [];
 
   if (category) {
     if (mongoose.Types.ObjectId.isValid(category)) {
-      filter.category = category;
+      andClauses.push({ category });
     } else {
       const cleanCat = category.toLowerCase().trim();
       const singularCat = cleanCat.endsWith('s') ? cleanCat.slice(0, -1) : cleanCat;
@@ -72,29 +72,37 @@ export async function listProducts({ page = 1, limit = 50, category, collection,
           { name: new RegExp(`^(${cleanCat}|${singularCat}|${pluralCat})$`, 'i') },
           { slug: new RegExp(cleanCat, 'i') },
           { name: new RegExp(cleanCat, 'i') },
+          { slug: new RegExp(singularCat, 'i') },
+          { name: new RegExp(singularCat, 'i') },
         ],
       });
 
-      if (foundCats.length > 0) {
-        const catIds = foundCats.map((c) => c._id);
-        filter.$or = [
-          { category: { $in: catIds } },
-          { tags: { $in: [cleanCat, singularCat, pluralCat] } },
-          { name: { $regex: cleanCat, $options: 'i' } },
-        ];
+      const catIds = foundCats.map((c) => c._id);
+      if (catIds.length > 0) {
+        andClauses.push({
+          $or: [
+            { category: { $in: catIds } },
+            { tags: { $in: [cleanCat, singularCat, pluralCat] } },
+            { name: { $regex: cleanCat, $options: 'i' } },
+            { name: { $regex: singularCat, $options: 'i' } },
+          ],
+        });
       } else {
-        filter.$or = [
-          { tags: { $regex: cleanCat, $options: 'i' } },
-          { name: { $regex: cleanCat, $options: 'i' } },
-          { subcategory: { $regex: cleanCat, $options: 'i' } },
-        ];
+        andClauses.push({
+          $or: [
+            { tags: { $in: [cleanCat, singularCat, pluralCat] } },
+            { name: { $regex: cleanCat, $options: 'i' } },
+            { name: { $regex: singularCat, $options: 'i' } },
+            { subcategory: { $regex: cleanCat, $options: 'i' } },
+          ],
+        });
       }
     }
   }
 
   if (collection) {
     if (mongoose.Types.ObjectId.isValid(collection)) {
-      filter.collection = collection;
+      andClauses.push({ collection });
     } else {
       const foundCol = await Collection.findOne({
         $or: [
@@ -102,31 +110,40 @@ export async function listProducts({ page = 1, limit = 50, category, collection,
           { name: new RegExp(`^${collection}$`, 'i') },
         ],
       });
-      filter.collection = foundCol ? foundCol._id : new mongoose.Types.ObjectId();
+      if (foundCol) {
+        andClauses.push({ collection: foundCol._id });
+      }
     }
   }
-  if (metalType) filter.metalType = metalType;
-  if (priceMode) filter.priceMode = priceMode;
+
+  if (metalType) andClauses.push({ metalType });
+  if (priceMode) andClauses.push({ priceMode });
+
   if (availabilityStatus) {
-    filter.availabilityStatus = availabilityStatus;
+    andClauses.push({ availabilityStatus });
   } else {
-    filter.availabilityStatus = { $ne: PRODUCT_STATUS.ARCHIVED };
+    andClauses.push({ availabilityStatus: { $ne: PRODUCT_STATUS.ARCHIVED } });
   }
 
   if (priceMin !== undefined || priceMax !== undefined) {
-    filter.sellingPrice = {};
-    if (priceMin !== undefined) filter.sellingPrice.$gte = Number(priceMin);
-    if (priceMax !== undefined) filter.sellingPrice.$lte = Number(priceMax);
+    const priceFilter = {};
+    if (priceMin !== undefined) priceFilter.$gte = Number(priceMin);
+    if (priceMax !== undefined) priceFilter.$lte = Number(priceMax);
+    andClauses.push({ sellingPrice: priceFilter });
   }
 
   if (search && search.trim()) {
     const cleanSearch = search.trim();
-    filter.$or = [
-      { name: { $regex: cleanSearch, $options: 'i' } },
-      { sku: { $regex: cleanSearch, $options: 'i' } },
-      { urlHandle: { $regex: cleanSearch, $options: 'i' } },
-    ];
+    andClauses.push({
+      $or: [
+        { name: { $regex: cleanSearch, $options: 'i' } },
+        { sku: { $regex: cleanSearch, $options: 'i' } },
+        { urlHandle: { $regex: cleanSearch, $options: 'i' } },
+      ],
+    });
   }
+
+  const filter = andClauses.length > 0 ? { $and: andClauses } : {};
 
   const sortMap = {
     newest: { createdAt: -1 },

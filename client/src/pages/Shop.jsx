@@ -76,18 +76,19 @@ export default function Shop() {
       // Category filter
       if (categoryParam !== 'ALL') {
         const catClean = categoryParam.toLowerCase().trim();
-        const catSingular = catClean.endsWith('s') ? catClean.slice(0, -1) : catClean;
+        const catSingular = catClean.replace(/s$/, '');
         const pCatSlug = (typeof p.category === 'object' ? (p.category?.slug || p.category?.name || '') : String(p.category || '')).toLowerCase();
         const pCatName = (typeof p.category === 'object' ? (p.category?.name || '') : '').toLowerCase();
         const pTags = Array.isArray(p.tags) ? p.tags.join(' ').toLowerCase() : String(p.tags || '').toLowerCase();
         const pName = (p.name || '').toLowerCase();
         const pSub = (p.subcategory || '').toLowerCase();
 
-        const matchesCat = pCatSlug.includes(catClean) || pCatSlug.includes(catSingular) ||
-                           pCatName.includes(catClean) || pCatName.includes(catSingular) ||
-                           pTags.includes(catClean) || pTags.includes(catSingular) ||
-                           pName.includes(catClean) || pName.includes(catSingular) ||
-                           pSub.includes(catClean) || pSub.includes(catSingular);
+        const matchesCat = 
+          pCatSlug.includes(catClean) || pCatSlug.includes(catSingular) ||
+          pCatName.includes(catClean) || pCatName.includes(catSingular) ||
+          pTags.includes(catClean) || pTags.includes(catSingular) ||
+          pName.includes(catClean) || pName.includes(catSingular) ||
+          pSub.includes(catClean) || pSub.includes(catSingular);
 
         if (!matchesCat) return false;
       }
@@ -344,7 +345,15 @@ export default function Shop() {
                         { label: 'Bridal Suites', value: 'bridal' },
                       ]),
                 ].map((cat) => {
-                  const isChecked = categoryParam.toLowerCase() === cat.value.toLowerCase();
+                  const isChecked =
+                    cat.value === 'ALL'
+                      ? categoryParam === 'ALL'
+                      : (
+                          categoryParam.toLowerCase() === cat.value.toLowerCase() ||
+                          categoryParam.toLowerCase().replace(/s$/, '') === cat.value.toLowerCase().replace(/s$/, '') ||
+                          categoryParam.toLowerCase().includes(cat.value.toLowerCase()) ||
+                          cat.value.toLowerCase().includes(categoryParam.toLowerCase())
+                        );
                   return (
                     <label key={cat.value} className="flex items-center gap-2.5 cursor-pointer group">
                       <input
@@ -568,21 +577,32 @@ export default function Shop() {
                           { label: 'Necklaces', value: 'necklaces' },
                           { label: 'Bangles', value: 'bangles' },
                         ]),
-                  ].map((cat) => (
-                    <label key={cat.value} className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="mob_cat"
-                        checked={categoryParam.toLowerCase() === cat.value.toLowerCase()}
-                        onChange={() => {
-                          handleCategoryChange(cat.value);
-                          setMobileFiltersOpen(false);
-                        }}
-                        className="accent-[#B89768]"
-                      />
-                      <span className={categoryParam.toLowerCase() === cat.value.toLowerCase() ? 'text-[#845E35] font-semibold' : ''}>{cat.label}</span>
-                    </label>
-                  ))}
+                  ].map((cat) => {
+                    const isMobChecked =
+                      cat.value === 'ALL'
+                        ? categoryParam === 'ALL'
+                        : (
+                            categoryParam.toLowerCase() === cat.value.toLowerCase() ||
+                            categoryParam.toLowerCase().replace(/s$/, '') === cat.value.toLowerCase().replace(/s$/, '') ||
+                            categoryParam.toLowerCase().includes(cat.value.toLowerCase()) ||
+                            cat.value.toLowerCase().includes(categoryParam.toLowerCase())
+                          );
+                    return (
+                      <label key={cat.value} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="mob_cat"
+                          checked={isMobChecked}
+                          onChange={() => {
+                            handleCategoryChange(cat.value);
+                            setMobileFiltersOpen(false);
+                          }}
+                          className="accent-[#B89768]"
+                        />
+                        <span className={isMobChecked ? 'text-[#845E35] font-semibold' : ''}>{cat.label}</span>
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
 
