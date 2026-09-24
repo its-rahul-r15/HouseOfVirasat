@@ -8,6 +8,7 @@ export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [collections, setCollections] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
@@ -20,12 +21,19 @@ export default function Shop() {
   const [stockStatus, setStockStatus] = useState('ALL');
   const [sortBy, setSortBy] = useState('in_stock_first');
 
-  // Load collections dynamically for filter tabs
+  // Load collections and categories dynamically for filter tabs
   useEffect(() => {
     productApi.getCollections()
       .then((res) => {
         const data = res?.data || res || [];
         setCollections(Array.isArray(data) ? data : (data.collections || []));
+      })
+      .catch(() => {});
+
+    productApi.getCategories()
+      .then((res) => {
+        const data = res?.data || res || [];
+        setCategories(Array.isArray(data) ? data : (data.categories || []));
       })
       .catch(() => {});
   }, []);
@@ -57,12 +65,31 @@ export default function Shop() {
   // Client-side filtering & sorting
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
-      // Collection
+      // Collection filter
       if (collectionParam !== 'ALL') {
         const pCol = Array.isArray(p.collection)
           ? p.collection.map((c) => (typeof c === 'object' ? (c.slug || c.name || '') : String(c))).join(' ').toUpperCase()
           : (typeof p.collection === 'object' ? (p.collection?.slug || p.collection?.name || '') : String(p.collection || '')).toUpperCase();
         if (!pCol.includes(collectionParam.toUpperCase())) return false;
+      }
+
+      // Category filter
+      if (categoryParam !== 'ALL') {
+        const catClean = categoryParam.toLowerCase().trim();
+        const catSingular = catClean.endsWith('s') ? catClean.slice(0, -1) : catClean;
+        const pCatSlug = (typeof p.category === 'object' ? (p.category?.slug || p.category?.name || '') : String(p.category || '')).toLowerCase();
+        const pCatName = (typeof p.category === 'object' ? (p.category?.name || '') : '').toLowerCase();
+        const pTags = Array.isArray(p.tags) ? p.tags.join(' ').toLowerCase() : String(p.tags || '').toLowerCase();
+        const pName = (p.name || '').toLowerCase();
+        const pSub = (p.subcategory || '').toLowerCase();
+
+        const matchesCat = pCatSlug.includes(catClean) || pCatSlug.includes(catSingular) ||
+                           pCatName.includes(catClean) || pCatName.includes(catSingular) ||
+                           pTags.includes(catClean) || pTags.includes(catSingular) ||
+                           pName.includes(catClean) || pName.includes(catSingular) ||
+                           pSub.includes(catClean) || pSub.includes(catSingular);
+
+        if (!matchesCat) return false;
       }
 
       // Search
@@ -98,7 +125,7 @@ export default function Shop() {
       }
       return 0;
     });
-  }, [products, metalParam, collectionParam, searchParam, priceBucket, stockStatus, sortBy]);
+  }, [products, metalParam, collectionParam, categoryParam, searchParam, priceBucket, stockStatus, sortBy]);
 
   // Close mobile filter on Escape key
   useEffect(() => {
@@ -125,6 +152,13 @@ export default function Shop() {
     setSearchParams(newParams);
   };
 
+  const handleCategoryChange = (cat) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (cat === 'ALL') newParams.delete('category');
+    else newParams.set('category', cat);
+    setSearchParams(newParams);
+  };
+
   const resetAllFilters = () => {
     setSearchParams(new URLSearchParams());
     setPriceBucket('ALL');
@@ -138,10 +172,16 @@ export default function Shop() {
       {/* Page Header & Breadcrumb */}
       <div className="bg-[#F9F8F5] border-b border-[#E5E2DA] py-10">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-8">
-          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-[#6B7280] uppercase tracking-wider mb-2">
+          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-[#6B7280] uppercase tracking-wider mb-2 flex-wrap">
             <Link to="/" className="hover:text-[#1A1A1A] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#B89768]">Home</Link>
             <span aria-hidden="true">/</span>
-            <span className="text-[#1A1A1A] font-medium">Catalogue</span>
+            <Link to="/shop" className="hover:text-[#1A1A1A]">Catalogue</Link>
+            {categoryParam !== 'ALL' && (
+              <>
+                <span aria-hidden="true">/</span>
+                <span className="text-[#B89768] font-semibold capitalize">{categoryParam}</span>
+              </>
+            )}
             {metalParam !== 'ALL' && (
               <>
                 <span aria-hidden="true">/</span>
@@ -156,8 +196,10 @@ export default function Shop() {
             )}
           </nav>
 
-          <h1 className="font-serif text-3xl sm:text-5xl font-medium text-[#1A1A1A]">
-            {collectionParam !== 'ALL'
+          <h1 className="font-serif text-3xl sm:text-5xl font-medium text-[#1A1A1A] capitalize">
+            {categoryParam !== 'ALL'
+              ? `${categoryParam} Collection`
+              : collectionParam !== 'ALL'
               ? `${collectionParam} Collection`
               : metalParam === 'GOLD'
               ? 'Fine Gold & Diamonds'
@@ -189,10 +231,57 @@ export default function Shop() {
             <span>Filters</span>
           </button>
 
-          {/* Result Count */}
-          <span className="text-xs uppercase tracking-wider text-[#6B7280] font-medium">
-            Showing <strong className="text-[#1A1A1A] tabular-nums">{filteredProducts.length}</strong> Heirlooms
-          </span>
+          {/* Result Count & Active Filter Chips */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-xs uppercase tracking-wider text-[#6B7280] font-medium">
+              Showing <strong className="text-[#1A1A1A] tabular-nums">{filteredProducts.length}</strong> Heirlooms
+            </span>
+
+            {/* Active Category Chip */}
+            {categoryParam !== 'ALL' && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#FAF6F0] border border-[#B8935A] text-[#845E35] text-xs rounded-full font-medium">
+                Category: <strong className="capitalize">{categoryParam}</strong>
+                <button
+                  type="button"
+                  onClick={() => handleCategoryChange('ALL')}
+                  className="hover:text-red-700 ml-0.5"
+                  title="Remove Category filter"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
+            {/* Active Metal Chip */}
+            {metalParam !== 'ALL' && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#FAF6F0] border border-[#B8935A] text-[#845E35] text-xs rounded-full font-medium">
+                Metal: <strong>{metalParam}</strong>
+                <button
+                  type="button"
+                  onClick={() => handleMetalChange('ALL')}
+                  className="hover:text-red-700 ml-0.5"
+                  title="Remove Metal filter"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+
+            {/* Active Collection Chip */}
+            {collectionParam !== 'ALL' && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#FAF6F0] border border-[#B8935A] text-[#845E35] text-xs rounded-full font-medium">
+                Collection: <strong>{collectionParam}</strong>
+                <button
+                  type="button"
+                  onClick={() => handleCollectionChange('ALL')}
+                  className="hover:text-red-700 ml-0.5"
+                  title="Remove Collection filter"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+          </div>
 
           {/* Sort Dropdown */}
           <div className="flex items-center gap-2">
@@ -232,6 +321,47 @@ export default function Shop() {
                 Reset
               </button>
             </div>
+
+            {/* Category Filter */}
+            <fieldset className="space-y-3">
+              <legend className="text-xs uppercase tracking-wider font-semibold text-[#1A1A1A]">
+                Jewellery Category
+              </legend>
+              <div className="flex flex-col gap-2 text-xs">
+                {[
+                  { label: 'All Categories', value: 'ALL' },
+                  ...(categories.length > 0
+                    ? categories.map((cat) => ({
+                        label: cat.name,
+                        value: cat.slug || cat.name,
+                      }))
+                    : [
+                        { label: 'Rings', value: 'rings' },
+                        { label: 'Earrings & Jhumkas', value: 'earrings' },
+                        { label: 'Necklaces & Sets', value: 'necklaces' },
+                        { label: 'Bangles & Kadas', value: 'bangles' },
+                        { label: 'Pendants', value: 'pendants' },
+                        { label: 'Bridal Suites', value: 'bridal' },
+                      ]),
+                ].map((cat) => {
+                  const isChecked = categoryParam.toLowerCase() === cat.value.toLowerCase();
+                  return (
+                    <label key={cat.value} className="flex items-center gap-2.5 cursor-pointer group">
+                      <input
+                        type="radio"
+                        name="category"
+                        checked={isChecked}
+                        onChange={() => handleCategoryChange(cat.value)}
+                        className="accent-[#B89768] focus-visible:ring-2 focus-visible:ring-[#B89768]"
+                      />
+                      <span className={`group-hover:text-[#1A1A1A] transition-colors ${isChecked ? 'text-[#845E35] font-semibold' : 'text-[#4A5568]'}`}>
+                        {cat.label}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </fieldset>
 
             {/* Metal Filter */}
             <fieldset className="space-y-3">
@@ -422,6 +552,38 @@ export default function Shop() {
                 >
                   <X className="w-5 h-5" aria-hidden="true" />
                 </button>
+              </div>
+
+              {/* Mobile Category Filter */}
+              <div>
+                <h4 className="text-xs uppercase font-semibold text-[#1A1A1A] mb-2">Jewellery Category</h4>
+                <div className="flex flex-col gap-2 text-xs">
+                  {[
+                    { label: 'All Categories', value: 'ALL' },
+                    ...(categories.length > 0
+                      ? categories.map((c) => ({ label: c.name, value: c.slug || c.name }))
+                      : [
+                          { label: 'Rings', value: 'rings' },
+                          { label: 'Earrings', value: 'earrings' },
+                          { label: 'Necklaces', value: 'necklaces' },
+                          { label: 'Bangles', value: 'bangles' },
+                        ]),
+                  ].map((cat) => (
+                    <label key={cat.value} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="mob_cat"
+                        checked={categoryParam.toLowerCase() === cat.value.toLowerCase()}
+                        onChange={() => {
+                          handleCategoryChange(cat.value);
+                          setMobileFiltersOpen(false);
+                        }}
+                        className="accent-[#B89768]"
+                      />
+                      <span className={categoryParam.toLowerCase() === cat.value.toLowerCase() ? 'text-[#845E35] font-semibold' : ''}>{cat.label}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               {/* Mobile Metal Filter */}

@@ -148,6 +148,20 @@ export const createProductSchema = z.object({
     supplierRef: z.string().optional(),
     batchRef: z.string().optional(),
     costPrice: toOptionalNumber,
+    priceBreakup: z.object({
+      isCustom: toOptionalBool(false),
+      purityLabel: z.string().optional(),
+      metalRatePerGram: toOptionalNumber,
+      estimatedMetalCost: toOptionalNumber,
+      estimatedStoneCost: toOptionalNumber,
+      makingCharges: toOptionalNumber,
+      makingChargesLabel: z.string().optional(),
+      preTaxTotal: toOptionalNumber,
+      gstRate: toOptionalNumber,
+      gstAmount: toOptionalNumber,
+      finalPrice: toOptionalNumber,
+      customNote: z.string().optional(),
+    }).optional(),
   }),
 });
 

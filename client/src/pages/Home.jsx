@@ -681,15 +681,15 @@ export default function Home() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-5">
             {[
               {
-                name: 'Rings',
-                description: 'Symbols of Forever',
-                slug: 'rings',
+                name: 'Necklaces',
+                description: 'Polki & Heritage Suites',
+                slug: 'necklaces',
                 img: '/catagories/img2.jpeg',
               },
               {
-                name: 'Earrings',
-                description: 'Everyday to Statement',
-                slug: 'earrings',
+                name: 'Rings',
+                description: 'Symbols of Forever',
+                slug: 'rings',
                 img: '/catagories/img3.jpeg',
               },
               {
@@ -699,9 +699,9 @@ export default function Home() {
                 img: '/catagories/img4.jpeg',
               },
               {
-                name: 'Bridal',
-                description: 'Royal Wedding Sets',
-                slug: 'bridal',
+                name: 'Earrings',
+                description: 'Everyday to Statement',
+                slug: 'earrings',
                 img: '/catagories/img5.jpeg',
               },
             ].map((cat) => (

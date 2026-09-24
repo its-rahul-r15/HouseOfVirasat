@@ -96,6 +96,22 @@ const productSchema = new mongoose.Schema({
   batchRef: String,
   costPrice: Number,
 
+  // Transparent Price Breakup Configuration
+  priceBreakup: {
+    isCustom: { type: Boolean, default: false },
+    purityLabel: String,
+    metalRatePerGram: Number,
+    estimatedMetalCost: Number,
+    estimatedStoneCost: Number,
+    makingCharges: Number,
+    makingChargesLabel: { type: String, default: 'Jaipur Karigari & Craftsmanship' },
+    preTaxTotal: Number,
+    gstRate: { type: Number, default: 3 },
+    gstAmount: Number,
+    finalPrice: Number,
+    customNote: String,
+  },
+
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'AdminUser' },
   archivedAt: Date,
 }, {

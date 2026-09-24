@@ -62,13 +62,33 @@ export async function listProducts({ page = 1, limit = 50, category, collection,
     if (mongoose.Types.ObjectId.isValid(category)) {
       filter.category = category;
     } else {
-      const foundCat = await Category.findOne({
+      const cleanCat = category.toLowerCase().trim();
+      const singularCat = cleanCat.endsWith('s') ? cleanCat.slice(0, -1) : cleanCat;
+      const pluralCat = cleanCat.endsWith('s') ? cleanCat : `${cleanCat}s`;
+
+      const foundCats = await Category.find({
         $or: [
-          { slug: category.toLowerCase() },
-          { name: new RegExp(`^${category}$`, 'i') },
+          { slug: { $in: [cleanCat, singularCat, pluralCat] } },
+          { name: new RegExp(`^(${cleanCat}|${singularCat}|${pluralCat})$`, 'i') },
+          { slug: new RegExp(cleanCat, 'i') },
+          { name: new RegExp(cleanCat, 'i') },
         ],
       });
-      filter.category = foundCat ? foundCat._id : new mongoose.Types.ObjectId();
+
+      if (foundCats.length > 0) {
+        const catIds = foundCats.map((c) => c._id);
+        filter.$or = [
+          { category: { $in: catIds } },
+          { tags: { $in: [cleanCat, singularCat, pluralCat] } },
+          { name: { $regex: cleanCat, $options: 'i' } },
+        ];
+      } else {
+        filter.$or = [
+          { tags: { $regex: cleanCat, $options: 'i' } },
+          { name: { $regex: cleanCat, $options: 'i' } },
+          { subcategory: { $regex: cleanCat, $options: 'i' } },
+        ];
+      }
     }
   }
 

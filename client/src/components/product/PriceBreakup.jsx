@@ -53,7 +53,7 @@ export default function PriceBreakup({ product }) {
         {/* Karigari / Making Charges */}
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-1.5">
-            <span>Jaipur Karigari & Craftsmanship</span>
+            <span>{breakup.makingChargesLabel || 'Jaipur Karigari & Craftsmanship'}</span>
           </div>
           <span className="font-medium text-[#1A1A1A] tabular-nums">
             {formatINR(breakup.makingCharges)}
@@ -87,7 +87,7 @@ export default function PriceBreakup({ product }) {
 
       <div className="flex items-start gap-1.5 text-[11px] text-[#9CA3AF] pt-1">
         <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" aria-hidden="true" />
-        <span>Price includes BIS hallmarking verification, insured vault delivery, and luxury wooden gift box.</span>
+        <span>{breakup.customNote || 'Price includes BIS hallmarking verification, insured vault delivery, and luxury wooden gift box.'}</span>
       </div>
     </div>
   );
