@@ -29,6 +29,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Trust reverse proxy (Nginx, Cloudflare, Docker) for accurate rate limiting and client IP
+app.set('trust proxy', 1);
+
 // Configure dynamic CORS origin handler to support credentials with wildcard or custom origins
 const getAllowedOrigins = () => {
   if (!env.CORS_ORIGIN || env.CORS_ORIGIN === '*' || env.CORS_ORIGIN === 'true') {
