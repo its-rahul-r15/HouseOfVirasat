@@ -104,8 +104,8 @@ const productSchema = new mongoose.Schema({
 });
 
 // Auto-transition status when stock changes
-productSchema.pre('save', function (next) {
-  if (!this.isModified('stockQuantity')) return next();
+productSchema.pre('save', function () {
+  if (!this.isModified('stockQuantity')) return;
 
   if (this.stockQuantity > 0) {
     this.availabilityStatus = PRODUCT_STATUS.IN_STOCK;
@@ -114,8 +114,6 @@ productSchema.pre('save', function (next) {
   } else {
     this.availabilityStatus = PRODUCT_STATUS.SOLD_OUT;
   }
-
-  next();
 });
 
 productSchema.index({ category: 1, availabilityStatus: 1 });

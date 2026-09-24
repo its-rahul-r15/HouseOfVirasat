@@ -35,14 +35,13 @@ const bespokeSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-bespokeSchema.pre('save', async function (next) {
+bespokeSchema.pre('save', async function () {
   if (this.isNew && !this.referenceNumber) {
     const now = new Date();
     const yyyymm = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
     const count = await mongoose.model('BespokeEnquiry').countDocuments();
     this.referenceNumber = `${REFERENCE_PREFIXES.BESPOKE}-${yyyymm}-${String(count + 1).padStart(4, '0')}`;
   }
-  next();
 });
 
 bespokeSchema.index({ status: 1, createdAt: -1 });

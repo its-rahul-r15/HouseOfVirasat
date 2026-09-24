@@ -33,14 +33,13 @@ const mtoSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-mtoSchema.pre('save', async function (next) {
+mtoSchema.pre('save', async function () {
   if (this.isNew && !this.referenceNumber) {
     const now = new Date();
     const yyyymm = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
     const count = await mongoose.model('MtoRequest').countDocuments();
     this.referenceNumber = `${REFERENCE_PREFIXES.MTO}-${yyyymm}-${String(count + 1).padStart(4, '0')}`;
   }
-  next();
 });
 
 mtoSchema.index({ status: 1, createdAt: -1 });
