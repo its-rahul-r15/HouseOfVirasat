@@ -40,6 +40,13 @@ const schema = z.object({
 
   UPLOADS_DIR: z.string().default('./uploads'),
   CDN_BASE_URL: z.string().optional(),
+
+  // Cloudflare R2
+  R2_ACCOUNT_ID: z.string().optional(),
+  R2_ACCESS_KEY_ID: z.string().optional(),
+  R2_SECRET_ACCESS_KEY: z.string().optional(),
+  R2_BUCKET_NAME: z.string().optional(),
+  R2_PUBLIC_URL: z.string().optional(), // e.g. https://pub-xxx.r2.dev or custom domain
 });
 
 const parsed = schema.safeParse(process.env);

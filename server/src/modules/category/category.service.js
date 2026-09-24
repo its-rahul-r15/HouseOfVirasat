@@ -50,7 +50,7 @@ export async function deleteCategory(id) {
 
 /**
  * Upload / replace a category's banner/thumbnail image.
- * Old image is deleted from disk to avoid orphaned files on VPS storage.
+ * Old image is deleted from R2 to avoid orphaned objects.
  */
 export async function uploadCategoryImage(id, file) {
   const category = await Category.findById(id);
@@ -61,7 +61,7 @@ export async function uploadCategoryImage(id, file) {
     deleteFile(category.image).catch(() => {});
   }
 
-  const { url } = await processUpload(file.path, UPLOAD_SUBDIRS.CATEGORIES);
+  const { url } = await processUpload(file.buffer, UPLOAD_SUBDIRS.CATEGORIES);
   category.image = url;
   await category.save();
   return category;
@@ -122,7 +122,7 @@ export async function uploadCollectionImage(id, file) {
     deleteFile(collection.image).catch(() => {});
   }
 
-  const { url } = await processUpload(file.path, UPLOAD_SUBDIRS.COLLECTIONS);
+  const { url } = await processUpload(file.buffer, UPLOAD_SUBDIRS.COLLECTIONS);
   collection.image = url;
   await collection.save();
   return collection;

@@ -7,7 +7,7 @@ export async function createBespokeEnquiry(data, files = []) {
   const referenceImages = [];
 
   for (const file of files) {
-    const uploaded = await processUpload(file.path, 'bespoke');
+    const uploaded = await processUpload(file.buffer, 'bespoke');
     referenceImages.push(uploaded.url);
   }
 

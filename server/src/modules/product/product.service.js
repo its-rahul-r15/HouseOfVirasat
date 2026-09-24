@@ -270,7 +270,7 @@ export async function duplicateProduct(id, adminId) {
 
 export async function addProductImages(id, files) {
   const processedImages = await Promise.all(
-    files.map((file) => processUpload(file.path, UPLOAD_SUBDIRS.PRODUCTS)),
+    files.map((file) => processUpload(file.buffer, UPLOAD_SUBDIRS.PRODUCTS)),
   );
 
   const galleryEntries = processedImages.map((img) => ({ url: img.url, altText: '' }));
@@ -297,7 +297,7 @@ export async function removeProductImage(id, imageUrl) {
 
 export async function processStandaloneUploads(files) {
   const processedImages = await Promise.all(
-    files.map((file) => processUpload(file.path, UPLOAD_SUBDIRS.PRODUCTS))
+    files.map((file) => processUpload(file.buffer, UPLOAD_SUBDIRS.PRODUCTS))
   );
   return processedImages;
 }
