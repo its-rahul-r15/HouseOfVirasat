@@ -12,7 +12,8 @@ const publicUrl = clean(env.R2_PUBLIC_URL);
 
 if (accountId && accessKeyId && secretAccessKey && bucketName) {
   const maskedKey = accessKeyId.length > 8 ? `${accessKeyId.slice(0, 4)}...${accessKeyId.slice(-4)}` : '****';
-  logger.info(`📦 R2 Storage initialized: bucket="${bucketName}", endpoint="https://${accountId}.r2.cloudflarestorage.com", keyId="${maskedKey}", secretLength=${secretAccessKey.length}`);
+  const maskedSecret = secretAccessKey.length > 8 ? `${secretAccessKey.slice(0, 4)}...${secretAccessKey.slice(-4)}` : '****';
+  logger.info(`📦 R2 Storage initialized: bucket="${bucketName}", endpoint="https://${accountId}.r2.cloudflarestorage.com", keyId="${maskedKey}", secret="${maskedSecret}" (len: ${secretAccessKey.length})`);
 } else {
   logger.warn('⚠️ R2 Storage: Missing one or more R2 credentials in environment variables.');
 }
