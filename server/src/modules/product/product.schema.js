@@ -107,6 +107,8 @@ export const createProductSchema = z.object({
     availabilityStatus: toOptionalEnum(Object.values(PRODUCT_STATUS)),
     madeToOrderAllowed: toOptionalBool(false),
     leadTimeDays: toOptionalInt.default(21),
+    isFeatured: toOptionalBool(false),
+    featuredOrder: toOptionalNumber.default(0),
     metalType: toOptionalEnum(Object.values(METAL_TYPE)),
     purity: toOptionalEnum(Object.values(PURITY)),
     netWeight: toOptionalNumber,
@@ -183,5 +185,7 @@ export const listProductsSchema = z.object({
     availabilityStatus: z.string().optional(),
     sort: z.enum(['newest', 'price_asc', 'price_desc', 'name_asc']).default('newest'),
     search: z.string().optional(),
+    isFeatured: z.preprocess((val) => val === 'true' || val === true ? true : val === 'false' || val === false ? false : undefined, z.boolean().optional()),
+    featured: z.preprocess((val) => val === 'true' || val === true ? true : val === 'false' || val === false ? false : undefined, z.boolean().optional()),
   }),
 });

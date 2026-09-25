@@ -55,8 +55,13 @@ async function resolveCollectionIds(collectionInput) {
   return ids;
 }
 
-export async function listProducts({ page = 1, limit = 50, category, collection, metalType, priceMode, priceMin, priceMax, availabilityStatus, sort = 'newest', search }) {
+export async function listProducts({ page = 1, limit = 50, category, collection, metalType, priceMode, priceMin, priceMax, availabilityStatus, sort = 'newest', search, isFeatured, featured }) {
   const andClauses = [];
+
+  const featuredFlag = isFeatured !== undefined ? isFeatured : featured;
+  if (featuredFlag !== undefined) {
+    andClauses.push({ isFeatured: Boolean(featuredFlag) });
+  }
 
   if (category) {
     if (mongoose.Types.ObjectId.isValid(category)) {

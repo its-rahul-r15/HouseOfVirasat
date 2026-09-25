@@ -61,6 +61,8 @@ const productSchema = new mongoose.Schema({
   },
   madeToOrderAllowed: { type: Boolean, default: false },
   leadTimeDays: { type: Number, default: 21 },
+  isFeatured: { type: Boolean, default: false, index: true },
+  featuredOrder: { type: Number, default: 0 },
 
   metalType: { type: String, enum: Object.values(METAL_TYPE) },
   purity: { type: String, enum: Object.values(PURITY) },

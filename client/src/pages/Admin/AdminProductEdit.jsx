@@ -70,6 +70,8 @@ export default function AdminProductEdit() {
     availabilityStatus: 'IN_STOCK',
     madeToOrderAllowed: true,
     leadTimeDays: 14,
+    isFeatured: false,
+    featuredOrder: 0,
 
     // Metal
     metalType: 'SILVER',
@@ -280,6 +282,8 @@ export default function AdminProductEdit() {
 
             setFormData({
               ...p,
+              isFeatured: Boolean(p.isFeatured),
+              featuredOrder: p.featuredOrder ?? 0,
               heroImage: {
                 url: heroUrl,
                 altText: (typeof p.heroImage === 'object' ? p.heroImage?.altText : '') || '',
@@ -752,6 +756,51 @@ export default function AdminProductEdit() {
               placeholder="Comprehensive product storytelling, craftsmanship details, Jadau techniques, stone purity..."
               className="w-full px-3 py-2 border border-[#D1CCC4] rounded-xs focus:outline-none focus:border-[#5C1A2E]"
             />
+          </div>
+
+          {/* ── Featured Showcase Settings ── */}
+          <div className="p-4 bg-[#FAF6F0] border border-[#E8DFD3] rounded-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Star className={`w-4 h-4 ${formData.isFeatured ? 'text-[#C9A84C] fill-[#C9A84C]' : 'text-[#8C7A6B]'}`} />
+                <div>
+                  <label className="font-semibold text-[#2B2320] block text-xs">
+                    Feature on Home Page Spotlight
+                  </label>
+                  <p className="text-[11px] text-[#6B7280]">
+                    Showcase this masterpiece in the "Featured Creations" section on the Home page.
+                  </p>
+                </div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.isFeatured}
+                  onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
+                  className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#5C1A2E]" />
+              </label>
+            </div>
+
+            {formData.isFeatured && (
+              <div className="pt-2 border-t border-[#E8DFD3] flex items-center gap-3">
+                <label className="text-[11px] font-semibold text-[#2B2320] whitespace-nowrap">
+                  Showcase Priority / Display Order:
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.featuredOrder}
+                  onChange={(e) => setFormData({ ...formData, featuredOrder: e.target.value })}
+                  placeholder="0 (Lower numbers appear first)"
+                  className="w-32 px-2.5 py-1.5 border border-[#D1CCC4] rounded-xs bg-white text-xs focus:outline-none focus:border-[#5C1A2E]"
+                />
+                <span className="text-[10.5px] text-[#6B7280] italic">
+                  (e.g., 1 for 1st spot, 2 for 2nd)
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

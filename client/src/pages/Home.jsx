@@ -55,6 +55,54 @@ const SILVER_CATEGORIES = [
   { label: 'Accessories', sublabel: 'More Than Jewellery', slug: 'accessories', img: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=200&q=75' },
 ];
 
+const DEFAULT_HOME_CATEGORIES = [
+  {
+    name: 'Necklaces',
+    description: 'Polki & Emerald Suites',
+    slug: 'necklaces',
+    image: { url: '/catagories/img1.jpeg' },
+    seoTitle: 'STATEMENT JADAU',
+  },
+  {
+    name: 'Necklaces',
+    description: 'Polki & Heritage Suites',
+    slug: 'necklaces',
+    image: { url: '/catagories/img2.jpeg' },
+  },
+  {
+    name: 'Rings',
+    description: 'Symbols of Forever',
+    slug: 'rings',
+    image: { url: '/catagories/img3.jpeg' },
+  },
+  {
+    name: 'Bangles',
+    description: 'Tradition on Your Wrist',
+    slug: 'bangles',
+    image: { url: '/catagories/img4.jpeg' },
+  },
+  {
+    name: 'Earrings',
+    description: 'Everyday to Statement',
+    slug: 'earrings',
+    image: { url: '/catagories/img5.jpeg' },
+  },
+];
+
+const CAT_FALLBACK_IMAGES = [
+  '/catagories/img1.jpeg',
+  '/catagories/img2.jpeg',
+  '/catagories/img3.jpeg',
+  '/catagories/img4.jpeg',
+  '/catagories/img5.jpeg',
+];
+
+const getCatImg = (cat, fallbackIdx = 0) => {
+  if (cat?.image?.url) return cat.image.url;
+  if (typeof cat?.image === 'string' && cat.image) return cat.image;
+  return CAT_FALLBACK_IMAGES[fallbackIdx % CAT_FALLBACK_IMAGES.length];
+};
+
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* ─────────────────────────────────────────────────────────────────────────── */
 /*  HERO SLIDES — Desktop & Mobile Responsive Banners                         */
@@ -157,7 +205,8 @@ const BRIDAL_HERITAGE_SLIDES = [
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [bridalSlide, setBridalSlide] = useState(0);
-  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [newArrivals, setNewArrivals] = useState([]);
+  const [featuredCreations, setFeaturedCreations] = useState([]);
   const [collections, setCollections] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -198,13 +247,17 @@ export default function Home() {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      productApi.getProducts({ limit: 4 }),
+      productApi.getProducts({ limit: 4, sort: 'newest' }),
+      productApi.getProducts({ isFeatured: true, limit: 8 }),
       productApi.getCollections(),
       productApi.getCategories(),
     ])
-      .then(([prodRes, colRes, catRes]) => {
-        const prods = prodRes?.data?.products || prodRes?.products || (Array.isArray(prodRes?.data) ? prodRes.data : []);
-        setFeaturedProducts(prods);
+      .then(([arrivalRes, featRes, colRes, catRes]) => {
+        const arrivals = arrivalRes?.data?.products || arrivalRes?.products || (Array.isArray(arrivalRes?.data) ? arrivalRes.data : []);
+        setNewArrivals(arrivals);
+
+        const feats = featRes?.data?.products || featRes?.products || (Array.isArray(featRes?.data) ? featRes.data : []);
+        setFeaturedCreations(feats.length > 0 ? feats : arrivals);
 
         const cols = colRes?.data || colRes || [];
         setCollections(Array.isArray(cols) ? cols : (cols.collections || []));
@@ -249,7 +302,7 @@ export default function Home() {
     <div className="flex flex-col bg-white font-sans pt-[48px] sm:pt-[54px] lg:pt-[112px] w-full max-w-full overflow-x-hidden">
 
       {/* ── 0. MOBILE STORY CATEGORY BAR ────────────────────────────────── */}
-      <CategoryStoryBar />
+      <CategoryStoryBar categories={categories} />
 
       {/* ── 1. HERO BANNER — Responsive Horizontal Aspect Ratio & Proportional Typography ─── */}
       <section className="relative w-full overflow-hidden select-none bg-[#1a0a05] aspect-[16/10] xs:aspect-[16/9] sm:aspect-[16/7.5] md:aspect-[21/9] lg:h-[calc(100vh-112px)] lg:max-h-[820px] lg:aspect-auto mt-0 lg:-mt-[112px]">
@@ -483,29 +536,59 @@ export default function Home() {
                 </Link>
               </div>
 
-              {/* Category thumbnails grid (6 items row, responsive) */}
-              <div className="grid grid-cols-6 divide-x divide-white/10" style={{ borderTop: '1px solid rgba(201,168,76,0.2)' }}>
-                {GOLD_CATEGORIES.map((cat) => (
-                  <Link
-                    key={cat.slug + '-gold'}
-                    to={`/shop?metal=GOLD&category=${cat.slug}`}
-                    className="group flex flex-col items-center text-center p-1 sm:p-2.5 transition-colors hover:bg-[#5C3D18]/70"
+              {/* Category thumbnails grid (Full Bleed Cover Image Tiles) */}
+              {(() => {
+                const worldCats = categories && categories.length > 0 ? categories.slice(0, 6) : GOLD_CATEGORIES;
+                return (
+                  <div
+                    className="grid divide-x divide-white/10"
+                    style={{
+                      gridTemplateColumns: `repeat(${worldCats.length}, minmax(0, 1fr))`,
+                      borderTop: '1px solid rgba(201,168,76,0.2)'
+                    }}
                   >
-                    <div className="w-full aspect-square overflow-hidden mb-1 sm:mb-2 rounded-xs">
-                      <img
-                        src={cat.img}
-                        alt={cat.label}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                        width="100"
-                        height="100"
-                      />
-                    </div>
-                    <p className="text-[8px] xs:text-[9px] sm:text-[10px] font-semibold text-white leading-tight w-full truncate" style={{ color: '#ffffff' }}>{cat.label}</p>
-                    <p className="text-[7px] xs:text-[7.5px] sm:text-[9px] leading-tight mt-0.5 w-full truncate text-white/90" style={{ color: '#ffffff' }}>{cat.sublabel}</p>
-                  </Link>
-                ))}
-              </div>
+                    {worldCats.map((cat, idx) => {
+                      const slug = cat.slug || cat.name?.toLowerCase();
+                      const name = cat.name || cat.label;
+                      const subtext = cat.description || cat.sublabel || 'Fine Craft';
+                      const img = getCatImg(cat, idx);
+
+                      return (
+                        <Link
+                          key={(cat._id || slug || idx) + '-gold'}
+                          to={`/shop?metal=GOLD&category=${slug}`}
+                          className="group relative flex flex-col justify-end p-1.5 sm:p-2.5 h-[110px] xs:h-[125px] sm:h-[145px] lg:h-[155px] overflow-hidden transition-all duration-300 bg-black/40"
+                        >
+                          {/* Zoomed 100% Full Box Cover Image */}
+                          <img
+                            src={img}
+                            alt={name}
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = CAT_FALLBACK_IMAGES[idx % CAT_FALLBACK_IMAGES.length];
+                            }}
+                            className="absolute inset-0 w-full h-full object-cover object-center scale-[1.35] group-hover:scale-[1.5] transition-transform duration-500 ease-out"
+                            loading="lazy"
+                          />
+
+                          {/* Subtle Bottom Gradient strictly for text legibility */}
+                          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
+
+                          {/* Text on Bottom */}
+                          <div className="relative z-10 w-full text-center">
+                            <p className="text-[8.5px] xs:text-[9.5px] sm:text-[11px] font-semibold text-white leading-tight w-full truncate drop-shadow-md" style={{ color: '#ffffff' }}>
+                              {name}
+                            </p>
+                            <p className="text-[7px] xs:text-[7.5px] sm:text-[9px] text-[#E0C588] leading-tight mt-0.5 w-full truncate font-medium drop-shadow-sm">
+                              {subtext}
+                            </p>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
 
             {/* ── 925 SILVER CARD ── */}
@@ -527,29 +610,59 @@ export default function Home() {
                 </Link>
               </div>
 
-              {/* Category thumbnails grid (6 items row, responsive) */}
-              <div className="grid grid-cols-6 divide-x divide-white/10" style={{ borderTop: '1px solid rgba(143,212,168,0.2)' }}>
-                {SILVER_CATEGORIES.map((cat) => (
-                  <Link
-                    key={cat.slug + '-silver'}
-                    to={`/shop?metal=SILVER&category=${cat.slug}`}
-                    className="group flex flex-col items-center text-center p-1 sm:p-2.5 transition-colors hover:bg-[#2B5C40]/70"
+              {/* Category thumbnails grid (Full Bleed Cover Image Tiles) */}
+              {(() => {
+                const worldCats = categories && categories.length > 0 ? categories.slice(0, 6) : SILVER_CATEGORIES;
+                return (
+                  <div
+                    className="grid divide-x divide-white/10"
+                    style={{
+                      gridTemplateColumns: `repeat(${worldCats.length}, minmax(0, 1fr))`,
+                      borderTop: '1px solid rgba(143,212,168,0.2)'
+                    }}
                   >
-                    <div className="w-full aspect-square overflow-hidden mb-1 sm:mb-2 rounded-xs">
-                      <img
-                        src={cat.img}
-                        alt={cat.label}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                        width="100"
-                        height="100"
-                      />
-                    </div>
-                    <p className="text-[8px] xs:text-[9px] sm:text-[10px] font-semibold text-white leading-tight w-full truncate" style={{ color: '#ffffff' }}>{cat.label}</p>
-                    <p className="text-[7px] xs:text-[7.5px] sm:text-[9px] leading-tight mt-0.5 w-full truncate text-white/90" style={{ color: '#ffffff' }}>{cat.sublabel}</p>
-                  </Link>
-                ))}
-              </div>
+                    {worldCats.map((cat, idx) => {
+                      const slug = cat.slug || cat.name?.toLowerCase();
+                      const name = cat.name || cat.label;
+                      const subtext = cat.description || cat.sublabel || 'Silver Craft';
+                      const img = getCatImg(cat, idx);
+
+                      return (
+                        <Link
+                          key={(cat._id || slug || idx) + '-silver'}
+                          to={`/shop?metal=SILVER&category=${slug}`}
+                          className="group relative flex flex-col justify-end p-1.5 sm:p-2.5 h-[110px] xs:h-[125px] sm:h-[145px] lg:h-[155px] overflow-hidden transition-all duration-300 bg-black/40"
+                        >
+                          {/* Zoomed 100% Full Box Cover Image */}
+                          <img
+                            src={img}
+                            alt={name}
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = CAT_FALLBACK_IMAGES[idx % CAT_FALLBACK_IMAGES.length];
+                            }}
+                            className="absolute inset-0 w-full h-full object-cover object-center scale-[1.35] group-hover:scale-[1.5] transition-transform duration-500 ease-out"
+                            loading="lazy"
+                          />
+
+                          {/* Subtle Bottom Gradient strictly for text legibility */}
+                          <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
+
+                          {/* Text on Bottom */}
+                          <div className="relative z-10 w-full text-center">
+                            <p className="text-[8.5px] xs:text-[9.5px] sm:text-[11px] font-semibold text-white leading-tight w-full truncate drop-shadow-md" style={{ color: '#ffffff' }}>
+                              {name}
+                            </p>
+                            <p className="text-[7px] xs:text-[7.5px] sm:text-[9px] text-[#A8D8B9] leading-tight mt-0.5 w-full truncate font-medium drop-shadow-sm">
+                              {subtext}
+                            </p>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
 
           </div>
@@ -618,7 +731,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-6">
-            {featuredProducts.slice(0, 4).map((product) => (
+            {newArrivals.map((product) => (
               <ProductCard key={product._id || product.id} product={product} />
             ))}
           </div>
@@ -632,110 +745,108 @@ export default function Home() {
       </section>
 
       {/* ── 4. OUR CATEGORIES ── */}
-      <section className="bg-[#FAF6F0] py-10 sm:py-14">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-8 w-full">
-          <div className="text-center max-w-md mx-auto mb-6 sm:mb-8">
-            <div className="flex items-center justify-center gap-3 mb-2">
-              <span className="w-8 h-[1px] bg-[#D1CCC0]" />
-              <Sparkles className="w-4 h-4 text-[#5C1A2E]" />
-              <span className="w-8 h-[1px] bg-[#D1CCC0]" />
-            </div>
-            <h2 className="font-serif text-2xl sm:text-3xl text-[#2B2320] font-semibold">Our Categories</h2>
-            <p className="text-sm text-[#6B7280] mt-1 font-light">Explore our handcrafted collections by jewellery type.</p>
-          </div>
+      {(() => {
+        const catList = categories && categories.length > 0 ? categories : DEFAULT_HOME_CATEGORIES;
+        const featuredCat = catList[0];
+        const gridCats = catList.length > 1 ? catList.slice(1) : catList;
 
-          {/* 1 Long Top Featured Editorial Category */}
-          <div className="mb-3 sm:mb-6">
-            <Link
-              to="/shop?category=necklaces"
-              className="group relative block h-[220px] sm:h-[340px] lg:h-[380px] overflow-hidden rounded-xl shadow-md border border-[#E8DFD3]"
-            >
-              {/* 100% Full Cover Image */}
-              <img
-                src="/catagories/img1.jpeg"
-                alt="Statement Necklaces"
-                className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
-                loading="lazy"
-              />
-
-              {/* Transparent subtle bottom gradient strictly for text legibility */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-
-              {/* Floating Transparent Text */}
-              <div className="absolute bottom-3 left-3.5 right-3.5 sm:bottom-6 sm:left-6 lg:bottom-8 lg:left-8 text-white z-10 max-w-2xl">
-                <span className="text-[9.5px] sm:text-xs uppercase tracking-[0.22em] text-[#E0C588] font-bold block mb-0.5 drop-shadow-md">
-                  STATEMENT JADAU
-                </span>
-                <h3 className="font-serif text-lg sm:text-3xl lg:text-4xl font-medium text-white leading-tight drop-shadow-lg" style={{ color: '#ffffff' }}>
-                  Handcrafted Polki &amp; Emerald Suites
-                </h3>
-                <span className="text-xs sm:text-sm text-white mt-1 sm:mt-1.5 inline-flex items-center gap-1.5 font-medium group-hover:underline drop-shadow-md transition-colors" style={{ color: '#ffffff' }}>
-                  <span style={{ color: '#ffffff' }}>Explore Collection</span>
-                  <span className="transition-transform group-hover:translate-x-1.5" style={{ color: '#ffffff' }}>→</span>
-                </span>
-              </div>
-            </Link>
-          </div>
-
-          {/* 4 Category Boxes in 1 Line */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-5">
-            {[
-              {
-                name: 'Necklaces',
-                description: 'Polki & Heritage Suites',
-                slug: 'necklaces',
-                img: '/catagories/img2.jpeg',
-              },
-              {
-                name: 'Rings',
-                description: 'Symbols of Forever',
-                slug: 'rings',
-                img: '/catagories/img3.jpeg',
-              },
-              {
-                name: 'Bangles',
-                description: 'Tradition on Your Wrist',
-                slug: 'bangles',
-                img: '/catagories/img4.jpeg',
-              },
-              {
-                name: 'Earrings',
-                description: 'Everyday to Statement',
-                slug: 'earrings',
-                img: '/catagories/img5.jpeg',
-              },
-            ].map((cat) => (
-              <Link
-                key={cat.slug}
-                to={`/shop?category=${cat.slug}`}
-                className="group relative block h-[180px] xs:h-[200px] sm:h-[260px] lg:h-[290px] overflow-hidden rounded-xl shadow-sm border border-[#E8DFD3] transition-all hover:shadow-md hover:border-[#845E35]"
-              >
-                {/* 100% Full Cover Image */}
-                <img
-                  src={cat.img}
-                  alt={cat.name}
-                  className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-108"
-                  loading="lazy"
-                />
-
-                {/* Soft bottom transparent shadow so text is crisp */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
-
-                {/* Floating Transparent Text on Image */}
-                <div className="absolute bottom-2.5 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 text-white z-10" style={{ color: '#ffffff' }}>
-                  <span className="text-[10.5px] sm:text-xs uppercase tracking-[0.18em] text-[#E0C588] font-bold block drop-shadow-md leading-tight">
-                    {cat.name}
-                  </span>
-                  <h4 className="font-serif text-[11.5px] sm:text-sm lg:text-base font-medium leading-tight text-white mt-0.5 drop-shadow-lg truncate" style={{ color: '#ffffff' }}>
-                    {cat.description}
-                  </h4>
+        return (
+          <section className="bg-[#FAF6F0] py-10 sm:py-14">
+            <div className="max-w-[1400px] mx-auto px-4 sm:px-8 w-full">
+              <div className="text-center max-w-md mx-auto mb-6 sm:mb-8">
+                <div className="flex items-center justify-center gap-3 mb-2">
+                  <span className="w-8 h-[1px] bg-[#D1CCC0]" />
+                  <Sparkles className="w-4 h-4 text-[#5C1A2E]" />
+                  <span className="w-8 h-[1px] bg-[#D1CCC0]" />
                 </div>
-              </Link>
-            ))}
-          </div>
+                <h2 className="font-serif text-2xl sm:text-3xl text-[#2B2320] font-semibold">Our Categories</h2>
+                <p className="text-sm text-[#6B7280] mt-1 font-light">Explore our handcrafted collections by jewellery type.</p>
+              </div>
 
-        </div>
-      </section>
+              {/* 1 Long Top Featured Editorial Category */}
+              {featuredCat && (
+                <div className="mb-3 sm:mb-6">
+                  <Link
+                    to={`/shop?category=${featuredCat.slug || featuredCat.name?.toLowerCase()}`}
+                    className="group relative block h-[220px] sm:h-[340px] lg:h-[380px] overflow-hidden rounded-xl shadow-md border border-[#E8DFD3]"
+                  >
+                    {/* 100% Full Cover Image */}
+                    <img
+                      src={getCatImg(featuredCat, 0)}
+                      alt={featuredCat.name}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/catagories/img1.jpeg';
+                      }}
+                      className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                      loading="lazy"
+                    />
+
+                    {/* Transparent subtle bottom gradient strictly for text legibility */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+
+                    {/* Floating Transparent Text */}
+                    <div className="absolute bottom-3 left-3.5 right-3.5 sm:bottom-6 sm:left-6 lg:bottom-8 lg:left-8 text-white z-10 max-w-2xl">
+                      <span className="text-[9.5px] sm:text-xs uppercase tracking-[0.22em] text-[#E0C588] font-bold block mb-0.5 drop-shadow-md">
+                        {featuredCat.seoTitle || 'STATEMENT JADAU'}
+                      </span>
+                      <h3 className="font-serif text-lg sm:text-3xl lg:text-4xl font-medium text-white leading-tight drop-shadow-lg" style={{ color: '#ffffff' }}>
+                        {featuredCat.name}
+                      </h3>
+                      {featuredCat.description && (
+                        <p className="text-xs sm:text-sm text-white/90 mt-1 line-clamp-2 max-w-xl font-light drop-shadow-md">
+                          {featuredCat.description}
+                        </p>
+                      )}
+                      <span className="text-xs sm:text-sm text-white mt-1 sm:mt-1.5 inline-flex items-center gap-1.5 font-medium group-hover:underline drop-shadow-md transition-colors" style={{ color: '#ffffff' }}>
+                        <span style={{ color: '#ffffff' }}>Explore Collection</span>
+                        <span className="transition-transform group-hover:translate-x-1.5" style={{ color: '#ffffff' }}>→</span>
+                      </span>
+                    </div>
+                  </Link>
+                </div>
+              )}
+
+              {/* Dynamic Category Boxes Grid */}
+              <div className={`grid grid-cols-2 ${gridCats.length > 4 ? 'sm:grid-cols-3 lg:grid-cols-4' : 'sm:grid-cols-4'} gap-2.5 sm:gap-4 lg:gap-5`}>
+                {gridCats.map((cat, idx) => (
+                  <Link
+                    key={cat._id || cat.slug || idx}
+                    to={`/shop?category=${cat.slug || cat.name?.toLowerCase()}`}
+                    className="group relative block h-[180px] xs:h-[200px] sm:h-[260px] lg:h-[290px] overflow-hidden rounded-xl shadow-sm border border-[#E8DFD3] transition-all hover:shadow-md hover:border-[#845E35]"
+                  >
+                    {/* 100% Full Cover Image */}
+                    <img
+                      src={getCatImg(cat, idx + 1)}
+                      alt={cat.name}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = CAT_FALLBACK_IMAGES[(idx + 1) % CAT_FALLBACK_IMAGES.length];
+                      }}
+                      className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-108"
+                      loading="lazy"
+                    />
+
+                    {/* Soft bottom transparent shadow so text is crisp */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+
+                    {/* Floating Transparent Text on Image */}
+                    <div className="absolute bottom-2.5 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 text-white z-10" style={{ color: '#ffffff' }}>
+                      <span className="text-[10.5px] sm:text-xs uppercase tracking-[0.18em] text-[#E0C588] font-bold block drop-shadow-md leading-tight">
+                        {cat.name}
+                      </span>
+                      <h4 className="font-serif text-[11.5px] sm:text-sm lg:text-base font-medium leading-tight text-white mt-0.5 drop-shadow-lg truncate" style={{ color: '#ffffff' }}>
+                        {cat.description || 'Tradition & Artistry'}
+                      </h4>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+            </div>
+          </section>
+        );
+      })()}
 
       {/* ── 6. BRIDAL HERITAGE ──────────────────────────────────────────────── */}
       <section className="py-6 sm:py-16 bg-[#FAF6F0] border-b border-[#E5E2DA] overflow-hidden">
@@ -1060,6 +1171,48 @@ export default function Home() {
           <div className="mt-4 px-2 flex flex-col sm:flex-row items-center justify-between gap-2 text-[9.5px] uppercase tracking-[0.25em] text-[#9C9488]">
             <span>TRADITION &nbsp;|&nbsp; ARTISTRY &nbsp;|&nbsp; ELEGANCE &nbsp;|&nbsp; ALWAYS YOURS</span>
             <span className="font-semibold text-[#8F6B38]">MORE THAN JEWELLERY — A LEGACY</span>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── 6.5 FEATURED CREATIONS / FEATURE PRODUCTS ────────────────────── */}
+      <section className="py-10 sm:py-16 bg-white border-b border-[#E8DFD3]">
+        <div className="max-w-[1400px] mx-auto px-3 sm:px-8">
+          
+          {/* Section Header */}
+          <div className="text-center max-w-xl mx-auto mb-6 sm:mb-10">
+            <div className="flex items-center justify-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+              <span className="block w-6 sm:w-10 h-px bg-[#C9A84C]/60" />
+              <span className="text-[9.5px] sm:text-[11px] uppercase tracking-[0.25em] font-bold text-[#5C1A2E]">
+                Signature Spotlight
+              </span>
+              <span className="block w-6 sm:w-10 h-px bg-[#C9A84C]/60" />
+            </div>
+            <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl text-[#2B2320] font-medium leading-tight">
+              Featured Creations
+            </h2>
+            <p className="text-xs sm:text-sm text-[#6B7280] mt-1.5 font-light">
+              Handpicked heirloom pieces celebrated for exceptional karigari and timeless royal allure.
+            </p>
+          </div>
+
+          {/* Product Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-6">
+            {featuredCreations.map((product) => (
+              <ProductCard key={product._id || product.id} product={product} />
+            ))}
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="mt-7 sm:mt-10 text-center">
+            <Link
+              to="/shop"
+              className="inline-flex items-center gap-2 px-6 py-2.5 sm:py-3 bg-transparent hover:bg-[#5C1A2E] text-[#5C1A2E] hover:text-white border border-[#5C1A2E] text-xs font-semibold uppercase tracking-[0.14em] rounded-xs transition-all duration-300 shadow-2xs hover:shadow-sm"
+            >
+              <span>Explore All Featured Pieces</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
         </div>

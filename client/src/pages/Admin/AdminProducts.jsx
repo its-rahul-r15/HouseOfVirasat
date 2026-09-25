@@ -14,6 +14,7 @@ import {
   Package,
   RefreshCw,
   Eye,
+  Star,
 } from 'lucide-react';
 import axiosClient from '../../api/axiosClient';
 import { productApi } from '../../api/product.api';
@@ -26,6 +27,7 @@ export default function AdminProducts() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedPriceMode, setSelectedPriceMode] = useState('');
+  const [selectedFeatured, setSelectedFeatured] = useState('');
   const navigate = useNavigate();
 
   // Load categories for filter dropdown
@@ -46,6 +48,7 @@ export default function AdminProducts() {
       if (selectedCategory) params.category = selectedCategory;
       if (selectedStatus) params.availabilityStatus = selectedStatus;
       if (selectedPriceMode) params.priceMode = selectedPriceMode;
+      if (selectedFeatured !== '') params.isFeatured = selectedFeatured === 'true';
 
       const res = await axiosClient.get('/products', { params });
       const data = Array.isArray(res?.data)
@@ -62,7 +65,20 @@ export default function AdminProducts() {
 
   useEffect(() => {
     fetchProducts();
-  }, [search, selectedCategory, selectedStatus, selectedPriceMode]);
+  }, [search, selectedCategory, selectedStatus, selectedPriceMode, selectedFeatured]);
+
+  const handleToggleFeatured = async (p) => {
+    try {
+      const newStatus = !p.isFeatured;
+      await axiosClient.put(`/products/${p._id}`, { ...p, isFeatured: newStatus });
+      setProducts((prev) =>
+        prev.map((item) => (item._id === p._id ? { ...item, isFeatured: newStatus } : item))
+      );
+    } catch (err) {
+      console.error('Failed to toggle featured status:', err);
+      alert('Failed to update featured status.');
+    }
+  };
 
   const handleDelete = async (id, name) => {
     if (window.confirm(`Are you sure you want to archive / delete product "${name || id}"?`)) {
@@ -166,12 +182,23 @@ export default function AdminProducts() {
           <option value="ESTIMATED">ESTIMATED</option>
           <option value="ON_REQUEST">ON REQUEST</option>
         </select>
+
+        {/* Featured Filter */}
+        <select
+          value={selectedFeatured}
+          onChange={(e) => setSelectedFeatured(e.target.value)}
+          className="px-3 py-2 border border-[#D1CCC4] rounded-xs focus:outline-none focus:border-[#5C1A2E] bg-white"
+        >
+          <option value="">All Showcase Types</option>
+          <option value="true">⭐ Featured Products Only</option>
+          <option value="false">Standard Products</option>
+        </select>
       </div>
 
       {/* ── Summary bar ── */}
       <div className="flex items-center justify-between text-xs text-[#6B7280] px-1">
         <span>Showing <strong>{products.length}</strong> products</span>
-        {(search || selectedCategory || selectedStatus || selectedPriceMode) && (
+        {(search || selectedCategory || selectedStatus || selectedPriceMode || selectedFeatured) && (
           <button
             type="button"
             onClick={() => {
@@ -179,6 +206,7 @@ export default function AdminProducts() {
               setSelectedCategory('');
               setSelectedStatus('');
               setSelectedPriceMode('');
+              setSelectedFeatured('');
             }}
             className="text-[#5C1A2E] underline hover:opacity-80 font-medium"
           >
@@ -200,13 +228,14 @@ export default function AdminProducts() {
                 <th className="p-3.5">Price (₹)</th>
                 <th className="p-3.5">Stock</th>
                 <th className="p-3.5">Status</th>
+                <th className="p-3.5 text-center">Featured</th>
                 <th className="p-3.5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E8E2D9]">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-[#6B7280]">
+                  <td colSpan={9} className="p-8 text-center text-[#6B7280]">
                     <div className="inline-flex items-center gap-2 text-xs">
                       <RefreshCw className="w-4 h-4 animate-spin text-[#5C1A2E]" />
                       <span>Loading products catalogue…</span>
@@ -215,7 +244,7 @@ export default function AdminProducts() {
                 </tr>
               ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-12 text-center text-[#6B7280]">
+                  <td colSpan={9} className="p-12 text-center text-[#6B7280]">
                     <div className="max-w-xs mx-auto space-y-2">
                       <Package className="w-8 h-8 text-[#9CA3AF] mx-auto stroke-1" />
                       <p className="font-serif text-base text-[#2B2320]">No products found</p>
@@ -322,6 +351,22 @@ export default function AdminProducts() {
                         >
                           {p.availabilityStatus || 'IN_STOCK'}
                         </span>
+                      </td>
+
+                      {/* Featured Star Toggle */}
+                      <td className="p-3.5 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleFeatured(p)}
+                          className={`p-1.5 rounded-full transition-all ${
+                            p.isFeatured
+                              ? 'text-[#C9A84C] bg-[#FAF4EB] hover:bg-[#F3E5C8]'
+                              : 'text-[#D1CCC4] hover:text-[#C9A84C] hover:bg-[#FAF6F0]'
+                          }`}
+                          title={p.isFeatured ? 'Featured Product (Click to unfeature)' : 'Mark as Featured (Show on Home Page)'}
+                        >
+                          <Star className={`w-4 h-4 ${p.isFeatured ? 'fill-[#C9A84C]' : ''}`} />
+                        </button>
                       </td>
 
                       {/* Actions */}
