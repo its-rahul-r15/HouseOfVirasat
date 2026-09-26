@@ -11,8 +11,10 @@ export const FULFILMENT_STATUS = {
   IN_PRODUCTION: 'IN_PRODUCTION',
   QUALITY_CHECK: 'QUALITY_CHECK',
   READY_TO_DISPATCH: 'READY_TO_DISPATCH',
+  DISPATCHED: 'DISPATCHED',   // BUG FIX: was missing — webhook.controller.js references this
   SHIPPED: 'SHIPPED',
   DELIVERED: 'DELIVERED',
+  RTO: 'RTO',                 // BUG FIX: was missing — webhook.controller.js references this
 };
 
 export const PRODUCT_STATUS = {

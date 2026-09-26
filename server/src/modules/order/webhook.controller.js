@@ -7,15 +7,28 @@ import { ApiResponse } from '../../lib/ApiResponse.js';
 
 export async function handleRazorpayWebhook(req, res) {
   const signature = req.headers['x-razorpay-signature'];
-  const rawBody = req.rawBody || JSON.stringify(req.body);
 
-  if (signature) {
-    try {
-      verifyWebhookSignature(rawBody, signature);
-    } catch (err) {
-      logger.error('Razorpay signature verification failed:', err.message);
-      return res.status(400).json({ error: 'Invalid signature' });
-    }
+  // BUG FIX: Signature verification is now MANDATORY.
+  // Previously wrapped in `if (signature)` — an attacker could omit the header
+  // entirely to skip HMAC validation and fake a payment.captured event.
+  if (!signature) {
+    logger.warn('Razorpay webhook rejected: missing x-razorpay-signature header');
+    return res.status(400).json({ error: 'Missing webhook signature' });
+  }
+
+  // req.rawBody must be the exact raw buffer/string set by the express raw-body middleware.
+  // JSON.stringify(req.body) is NOT a safe fallback — it may differ from what Razorpay signed.
+  const rawBody = req.rawBody;
+  if (!rawBody) {
+    logger.error('Razorpay webhook: req.rawBody is undefined — ensure raw-body middleware is applied to this route');
+    return res.status(500).json({ error: 'Server misconfiguration: rawBody not available' });
+  }
+
+  try {
+    verifyWebhookSignature(rawBody, signature);
+  } catch (err) {
+    logger.error('Razorpay signature verification failed:', err.message);
+    return res.status(400).json({ error: 'Invalid signature' });
   }
 
   const { event, payload } = req.body;
@@ -62,7 +75,7 @@ export async function handleShiprocketWebhook(req, res) {
       if (current_status === 'DELIVERED') {
         updateData.fulfilmentStatus = FULFILMENT_STATUS.DELIVERED;
       } else if (current_status === 'IN TRANSIT' || current_status === 'OUT FOR DELIVERY') {
-        updateData.fulfilmentStatus = FULFILMENT_STATUS.DISPATCHED;
+        updateData.fulfilmentStatus = FULFILMENT_STATUS.DISPATCHED; // Now exists in constants
       } else if (current_status === 'RTO INITIATED' || current_status === 'RTO DELIVERED') {
         updateData.fulfilmentStatus = FULFILMENT_STATUS.RTO;
       }

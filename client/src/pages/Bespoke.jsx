@@ -318,12 +318,13 @@ export default function Bespoke() {
                   {previewUrls.length > 0 && (
                     <div className="flex gap-3 overflow-x-auto py-2">
                       {previewUrls.map((url, i) => (
-                        <img
-                          key={i}
-                          src={url}
-                          alt={`Uploaded preview ${i + 1}`}
-                          className="w-16 h-16 object-cover border border-[#E5E2DA] rounded-xs"
-                        />
+                        <div key={i} className="w-16 h-16 rounded-xs border border-[#E5E2DA] overflow-hidden shrink-0 bg-[#FAF6F0]">
+                          <img
+                            src={url}
+                            alt={`Uploaded preview ${i + 1}`}
+                            className="w-full h-full object-cover object-center"
+                          />
+                        </div>
                       ))}
                     </div>
                   )}

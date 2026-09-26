@@ -192,15 +192,17 @@ export default function AccountOverview() {
           <div className="bg-white border border-[#E8E2D9] rounded-sm p-5 sm:p-6 space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#E8E2D9]">
               <div className="flex items-center gap-4">
-                <img
-                  src={
-                    activeProduct?.heroImage ||
-                    (Array.isArray(activeProduct?.gallery) && activeProduct.gallery[0]?.url) ||
-                    'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80'
-                  }
-                  alt={activeOrder.items?.[0]?.name || 'Heirloom'}
-                  className="w-16 h-16 object-cover rounded-xs border border-[#E8E2D9]"
-                />
+                <div className="w-16 h-16 rounded-xs border border-[#E8E2D9] overflow-hidden shrink-0 bg-[#FAF6F0]">
+                  <img
+                    src={
+                      activeProduct?.heroImage ||
+                      (Array.isArray(activeProduct?.gallery) && activeProduct.gallery[0]?.url) ||
+                      'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80'
+                    }
+                    alt={activeOrder.items?.[0]?.name || 'Heirloom'}
+                    className="w-full h-full object-cover object-center"
+                  />
+                </div>
                 <div>
                   <span className="text-[10.5px] text-[#6B7280] font-mono">
                     Order Ref: {activeOrder.referenceNumber || activeOrder._id} · Placed{' '}

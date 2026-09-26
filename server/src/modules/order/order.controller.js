@@ -84,14 +84,14 @@ export const markPaymentFailed = catchAsync(async (req, res) => {
 
 export const getOrderStatus = catchAsync(async (req, res) => {
   const order = await orderService.getOrderByRef(req.params.ref);
+  // BUG FIX: Only return non-PII fields on this public endpoint.
+  // items, total, customer details, createdAt are NOT returned here.
+  // Use the authenticated admin route GET /:ref for the full order object.
   ApiResponse.ok(res, {
     referenceNumber: order.referenceNumber,
     paymentStatus: order.paymentStatus,
     fulfilmentStatus: order.fulfilmentStatus,
-    trackingLink: order.trackingLink,
-    items: order.items,
-    total: order.total,
-    createdAt: order.createdAt,
+    trackingLink: order.trackingLink || null,
   });
 });
 

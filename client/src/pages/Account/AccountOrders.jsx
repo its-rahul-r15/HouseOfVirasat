@@ -170,11 +170,13 @@ export default function AccountOrders() {
               {/* Product preview & details */}
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div className="flex items-center gap-4">
-                  <img
-                    src={order.image}
-                    alt={order.name}
-                    className="w-20 h-20 object-cover rounded-xs border border-[#E8E2D9]"
-                  />
+                  <div className="w-20 h-20 rounded-xs border border-[#E8E2D9] overflow-hidden shrink-0 bg-[#FAF6F0]">
+                    <img
+                      src={order.image}
+                      alt={order.name}
+                      className="w-full h-full object-cover object-center"
+                    />
+                  </div>
                   <div>
                     <h4 className="font-serif text-lg font-medium text-[#2B2320]">
                       {order.name}

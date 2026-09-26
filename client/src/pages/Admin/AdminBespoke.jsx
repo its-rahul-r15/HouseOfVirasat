@@ -278,11 +278,13 @@ export default function AdminBespoke() {
                     <div className="flex flex-wrap gap-3">
                       {lead.referenceImages.map((img, idx) => (
                         <a key={idx} href={img} target="_blank" rel="noopener noreferrer">
-                          <img
-                            src={img}
-                            alt="Reference"
-                            className="w-20 h-20 object-cover rounded-xs border border-[#E8E2D9] hover:opacity-80 transition-opacity"
-                          />
+                          <div className="w-20 h-20 rounded-xs border border-[#E8E2D9] overflow-hidden bg-[#FAF6F0] hover:opacity-80 transition-opacity">
+                            <img
+                              src={img}
+                              alt="Reference"
+                              className="w-full h-full object-cover object-center"
+                            />
+                          </div>
                         </a>
                       ))}
                     </div>

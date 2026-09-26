@@ -14,9 +14,16 @@ router.post('/checkout', checkoutLimiter, validate(createOrderSchema), orderCont
 // Payment verification — rate-limited; server HMAC signature check prevents fake confirmations
 router.post('/verify-payment', checkoutLimiter, orderController.verifyPayment);
 
-// Let client notify server of user-dismissed / failed payment to release stock hold early
-router.post('/payment-failed', orderController.markPaymentFailed);
+// BUG FIX: Added checkoutLimiter to prevent brute-forcing razorpayOrderIds to cancel orders.
+// This endpoint takes a razorpayOrderId and marks the order FAILED. It has no auth check by design
+// (the user may not be logged in), so rate limiting is the primary abuse-prevention mechanism.
+// The endpoint only transitions PENDING→FAILED (never PAID→FAILED), so a confirmed order is safe.
+router.post('/payment-failed', checkoutLimiter, orderController.markPaymentFailed);
 
+// BUG FIX: This public status endpoint intentionally returns ONLY non-PII fields
+// (paymentStatus, fulfilmentStatus, trackingLink) — NOT items, total, or customer details.
+// See getOrder (admin route) for full order data. Ensure orderController.getOrderStatus only
+// returns the safe subset — see order.controller.js.
 router.get('/:ref/status', orderController.getOrderStatus);
 
 // Authenticated patron routes

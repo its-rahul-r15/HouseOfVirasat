@@ -557,9 +557,9 @@ export default function Home() {
                         <Link
                           key={(cat._id || slug || idx) + '-gold'}
                           to={`/shop?metal=GOLD&category=${slug}`}
-                          className="group relative flex flex-col justify-end p-1.5 sm:p-2.5 h-[110px] xs:h-[125px] sm:h-[145px] lg:h-[155px] overflow-hidden transition-all duration-300 bg-black/40"
+                          className="group relative flex flex-col justify-end h-[110px] xs:h-[125px] sm:h-[145px] lg:h-[155px] overflow-hidden transition-all duration-300"
                         >
-                          {/* Zoomed 100% Full Box Cover Image */}
+                          {/* Full Bleed Cover Image — edge-to-edge, no scale, no padding */}
                           <img
                             src={img}
                             alt={name}
@@ -567,7 +567,7 @@ export default function Home() {
                               e.target.onerror = null;
                               e.target.src = CAT_FALLBACK_IMAGES[idx % CAT_FALLBACK_IMAGES.length];
                             }}
-                            className="absolute inset-0 w-full h-full object-cover object-center scale-[1.35] group-hover:scale-[1.5] transition-transform duration-500 ease-out"
+                            className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
                             loading="lazy"
                           />
 
@@ -575,7 +575,7 @@ export default function Home() {
                           <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
 
                           {/* Text on Bottom */}
-                          <div className="relative z-10 w-full text-center">
+                          <div className="relative z-10 w-full text-center pb-2 px-1">
                             <p className="text-[8.5px] xs:text-[9.5px] sm:text-[11px] font-semibold text-white leading-tight w-full truncate drop-shadow-md" style={{ color: '#ffffff' }}>
                               {name}
                             </p>
@@ -631,9 +631,9 @@ export default function Home() {
                         <Link
                           key={(cat._id || slug || idx) + '-silver'}
                           to={`/shop?metal=SILVER&category=${slug}`}
-                          className="group relative flex flex-col justify-end p-1.5 sm:p-2.5 h-[110px] xs:h-[125px] sm:h-[145px] lg:h-[155px] overflow-hidden transition-all duration-300 bg-black/40"
+                          className="group relative flex flex-col justify-end h-[110px] xs:h-[125px] sm:h-[145px] lg:h-[155px] overflow-hidden transition-all duration-300"
                         >
-                          {/* Zoomed 100% Full Box Cover Image */}
+                          {/* Full Bleed Cover Image — edge-to-edge, no scale, no padding */}
                           <img
                             src={img}
                             alt={name}
@@ -641,7 +641,7 @@ export default function Home() {
                               e.target.onerror = null;
                               e.target.src = CAT_FALLBACK_IMAGES[idx % CAT_FALLBACK_IMAGES.length];
                             }}
-                            className="absolute inset-0 w-full h-full object-cover object-center scale-[1.35] group-hover:scale-[1.5] transition-transform duration-500 ease-out"
+                            className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
                             loading="lazy"
                           />
 
@@ -649,7 +649,7 @@ export default function Home() {
                           <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
 
                           {/* Text on Bottom */}
-                          <div className="relative z-10 w-full text-center">
+                          <div className="relative z-10 w-full text-center pb-2 px-1">
                             <p className="text-[8.5px] xs:text-[9.5px] sm:text-[11px] font-semibold text-white leading-tight w-full truncate drop-shadow-md" style={{ color: '#ffffff' }}>
                               {name}
                             </p>

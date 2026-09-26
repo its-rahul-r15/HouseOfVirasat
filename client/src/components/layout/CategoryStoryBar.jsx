@@ -61,9 +61,10 @@ export default function CategoryStoryBar({ categories: propCategories }) {
               to={link}
               className="flex flex-col items-center gap-1.5 group flex-1 max-w-[80px] shrink-0 text-center"
             >
-              {/* Circular Ring Container */}
-              <div className="w-[62px] h-[62px] xs:w-[68px] xs:h-[68px] rounded-full p-[2px] bg-gradient-to-tr from-[#C9A84C] via-[#E8D4A2] to-[#B8935A] shadow-xs flex items-center justify-center shrink-0">
-                <div className="w-full h-full rounded-full overflow-hidden relative leading-none bg-[#FAF6F0]">
+              {/* Circular Ring Container — outer is gradient border, inner is the actual circle */}
+              <div className="w-[62px] h-[62px] xs:w-[68px] xs:h-[68px] rounded-full p-[2.5px] bg-gradient-to-tr from-[#C9A84C] via-[#E8D4A2] to-[#B8935A] shadow-xs shrink-0">
+                {/* Inner circle — must be block with explicit full size, no padding */}
+                <div className="w-full h-full rounded-full overflow-hidden block bg-[#FAF6F0]">
                   <img
                     src={imageUrl}
                     alt={label}
@@ -71,8 +72,9 @@ export default function CategoryStoryBar({ categories: propCategories }) {
                       e.target.onerror = null;
                       e.target.src = FALLBACK_IMAGES[idx % FALLBACK_IMAGES.length];
                     }}
-                    className="absolute inset-0 w-full h-full object-cover object-center block scale-105"
+                    className="w-full h-full object-cover object-center block"
                     loading="lazy"
+                    style={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 </div>
               </div>

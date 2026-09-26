@@ -116,8 +116,31 @@ export async function initiateCheckout({ customer, shippingAddress, billingAddre
 }
 
 export async function confirmOrder(orderId, razorpayOrderId, razorpayPaymentId, method = 'ONLINE') {
+  // BUG FIX: Atomic lock — use findOneAndUpdate to claim the PENDING→PAID transition.
+  // Previously, this function read the order status and then updated it in two separate steps.
+  // Under concurrent calls (client callback + Razorpay webhook arriving simultaneously), both
+  // could read PENDING, pass the check, and call this function twice → double stock decrement,
+  // double coupon usage, two invoice numbers generated.
+  // Now only ONE caller wins the atomic update; the other gets null and returns safely.
+  const lockedOrder = await Order.findOneAndUpdate(
+    { _id: orderId, paymentStatus: ORDER_STATUS.PENDING },
+    { $set: { paymentStatus: ORDER_STATUS.PAID } },
+    { new: false } // return the ORIGINAL doc so we know we were the ones who changed it
+  );
+
+  if (!lockedOrder) {
+    // Either order doesn't exist, or it was already claimed by another concurrent call
+    const existingOrder = await Order.findById(orderId);
+    if (!existingOrder) throw ApiError.notFound('Order not found');
+    if (existingOrder.paymentStatus === ORDER_STATUS.PAID) {
+      logger.info(`confirmOrder: order ${orderId} already PAID — concurrent call ignored (race condition prevented)`);
+      return existingOrder;
+    }
+    throw ApiError.badRequest(`Cannot confirm order in status: ${existingOrder.paymentStatus}`);
+  }
+
+  // We won the atomic lock — proceed with stock, coupon, invoice operations
   const order = await Order.findById(orderId).populate('items.productId');
-  if (!order) throw ApiError.notFound('Order not found');
 
   // Decrement stock — only on payment confirmation, never before.
   // Use findByIdAndUpdate (not .save()) to avoid full document re-validation,
@@ -152,7 +175,6 @@ export async function confirmOrder(orderId, razorpayOrderId, razorpayPaymentId, 
   const invoiceNumber = await generateInvoiceNumber();
 
   await Order.findByIdAndUpdate(orderId, {
-    paymentStatus: ORDER_STATUS.PAID,
     paymentGatewayRef: razorpayPaymentId,
     invoiceNumber,
     $unset: { reservedUntil: 1 },

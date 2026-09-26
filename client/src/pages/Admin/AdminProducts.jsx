@@ -272,14 +272,16 @@ export default function AdminProducts() {
                       {/* Image & Title */}
                       <td className="p-3.5">
                         <div className="flex items-center gap-3">
-                          <img
-                            src={imgUrl}
-                            alt={p.name}
-                            className="w-12 h-12 object-cover rounded-xs border border-[#E8E2D9] bg-[#FAF6F0] shrink-0"
-                            onError={(e) => {
-                              e.target.src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=150&q=80';
-                            }}
-                          />
+                          <div className="w-12 h-12 rounded-xs border border-[#E8E2D9] overflow-hidden shrink-0 bg-[#FAF6F0]">
+                            <img
+                              src={imgUrl}
+                              alt={p.name}
+                              className="w-full h-full object-cover object-center"
+                              onError={(e) => {
+                                e.target.src = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=150&q=80';
+                              }}
+                            />
+                          </div>
                           <div className="min-w-0">
                             <h4 className="font-semibold text-[#2B2320] truncate max-w-xs text-xs">
                               {p.name}
